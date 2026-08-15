@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D7 — Cloud Computing and Security Issues</title>
+  <meta name="description"
+    content="An interactive terminal-style report on cloud computing security issues: data breaches, identity and access management, and malware/ransomware." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Viewport width alert for small screens (managed via CSS) -->
+  <div class="small-screen-block" role="alert">
+    <div class="small-screen-block__inner">
+      <img class="small-screen-block__logo" src="assets/logo.jpg" alt="D7 Systems logo" />
+
+      <div class="small-screen-block__window">
+        <header class="small-screen-block__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="small-screen-block__title">viewport_error.log</span>
+        </header>
+        <div class="small-screen-block__body">
+          <p class="small-screen-block__code">&gt; ERROR: viewport width below minimum</p>
+          <p class="small-screen-block__message">This experience is built for larger screens. Please view on a desktop or laptop for the full effect.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Texture overlays -->
+  <div class="fx-grid" aria-hidden="true"></div>
+  <div class="fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+
+  <!-- Site Logo -->
+  <div id="site-logo" class="site-logo">
+    <button type="button" class="site-logo__link" data-cmd="back" aria-label="D7 — back to console">
+      <img class="site-logo__mark" src="assets/logo.jpg" alt="D7 Systems logo" />
+    </button>
+  </div>
+
+  <!-- Typing Sound Toggle -->
+  <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" aria-label="Toggle typing sound">
+    <span class="sound-toggle__icon" aria-hidden="true">&#128263;</span>
+    <span data-sound-label>sound off</span>
+  </button>
+
+
+  <!-- Screen 1: Intro -->
+  <section id="intro" class="screen screen--intro is-active" aria-label="Introduction">
+
+    <!-- Skip control -->
+    <button id="skip-btn" class="skip-btn" type="button">
+      skip intro <span class="skip-btn__key">[esc]</span>
+    </button>
+
+    <div class="intro__inner">
+      <pre id="boot-log" class="boot-log" aria-hidden="true"></pre>
+
+      <h1 class="intro-title">
+        <span class="intro-title__line intro-title__line--presents" id="line-presents"></span>
+        <span class="intro-title__line intro-title__line--main" id="line-main"></span>
+        <span class="caret" id="intro-caret" aria-hidden="true"></span>
+      </h1>
+
+      <p class="sr-only">D7 presents: Cloud Computing and Security Issues</p>
+
+      <div class="intro-sub" id="intro-sub">
+        <span class="intro-sub__rule" aria-hidden="true"></span>
+        <p class="intro-sub__text">An interactive terminal report</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Screen 2: Console -->
+  <main id="console" class="screen screen--console" aria-label="Console">
+    <div class="console__inner">
+
+      <p class="console__brand">D7<span class="console__brand-dot">.</span>sys</p>
+
+      <p class="console__ready">
+        <span class="console__ok">[ ok ]</span> session established — awaiting command
+      </p>
+
+      <form id="console-form" class="console__form" autocomplete="off">
+        <label for="console-input" class="sr-only">Command input</label>
+        <span class="console__prompt-symbol" aria-hidden="true">&gt;</span>
+        <input id="console-input" class="console__input" type="text" autocomplete="off" autocapitalize="off"
+          spellcheck="false" placeholder="type a command..." />
+        <span class="console__caret" aria-hidden="true"></span>
+      </form>
+
+      <!-- Feedback line for unrecognised commands -->
+      <p id="console-feedback" class="console__feedback" role="status" aria-live="polite"></p>
+
+      <p class="console__hint">
+        type: <span data-cmd="data breach">data breach</span> / <span data-cmd="iam">iam</span> / <span
+          data-cmd="malware">malware</span> / <span data-cmd="about">about</span>
+      </p>
+
+    </div>
+
+    <p id="console-counter" class="console__counter">commands entered: <span data-counter-value>0</span></p>
+  </main>
+
+
+  <!-- Content Pages -->
+
+  <!-- Page: Data Breach -->
+  <section id="page-databreach" class="screen screen--page" aria-label="Data Breach" data-page="databreach">
+    <canvas class="page__bg" aria-hidden="true"></canvas>
+
+    <div class="page__inner">
+      <pre class="page__access-log"
+        aria-hidden="true"><span class="page__access-line">&gt; accessing data_breach.log ...</span><span class="page__access-line">&gt; decrypting ......... OK</span></pre>
+
+      <article class="term-window">
+        <header class="term-window__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="term-window__title">data_breach.log</span>
+        </header>
+        <div class="term-window__body">
+          <h2 class="term-window__heading" data-typewriter>Data Breach</h2>
+
+          <p data-typewriter>Data breaches rank among the most damaging security threats in cloud computing. The Target attack shows the
+            scale of exposure possible. Attackers entered through a third-party HVAC vendor, not Target's own systems,
+            and exposed roughly 70 million customer records. The company paid close to $400 million in the aftermath
+            (Jathanna &amp; Jagli, 2017).</p>
+
+          <p data-typewriter>The entry point matters more than people assume. Any vendor connected to a network becomes part of that
+            network's attack surface, whether the organisation accounts for it or not.</p>
+
+          <p data-typewriter>Cloud platforms amplify this risk. Large amounts of sensitive data sit on shared servers, so one successful
+            breach can affect many users at once (Dawood et al., 2023). A single company losing a server room loses its
+            own records. A compromised cloud platform can expose everyone on it.</p>
+
+          <p data-typewriter>Hashizume et al. (2013, p. 8) define the core problem directly: data leakage happens when data reaches the
+            wrong hands during transfer, storage, audit, or processing. Moving data into the cloud multiplies the points
+            where it can leak, and usually reduces how much of that movement an organisation can actually see.</p>
+
+          <a class="term-window__video term-window__video--fallback" href="https://youtu.be/v5rAW9oqTD8?t=24"
+            target="_blank" rel="noopener noreferrer">
+            <img class="term-window__video-thumb" src="https://img.youtube.com/vi/v5rAW9oqTD8/hqdefault.jpg" alt=""
+              loading="lazy" />
+            <span class="term-window__video-play" aria-hidden="true">&#9654;</span>
+            <span class="term-window__video-caption">Watch on YouTube — &ldquo;Cyber Attack Explained: Target
+              (2013)&rdquo;</span>
+          </a>
+        </div>
+      </article>
+
+      <p class="page__prompt">
+        type <span data-cmd="back">back</span> or press <span class="page__prompt-key">[esc]</span> to return to console
+      </p>
+    </div>
+  </section>
+
+  <!-- Page: IAM -->
+  <section id="page-iam" class="screen screen--page" aria-label="Identity and Access Management" data-page="iam">
+    <canvas class="page__bg" aria-hidden="true"></canvas>
+
+    <div class="page__inner">
+      <pre class="page__access-log"
+        aria-hidden="true"><span class="page__access-line">&gt; accessing iam.log ...</span><span class="page__access-line">&gt; decrypting ......... OK</span></pre>
+
+      <article class="term-window">
+        <header class="term-window__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="term-window__title">iam.log</span>
+        </header>
+        <div class="term-window__body">
+          <h2 class="term-window__heading" data-typewriter>Identity and Access Management</h2>
+
+          <p data-typewriter>Weak identity and access management lets unauthorised actors exploit cloud systems, often without
+            triggering any alarm. Khalil et al. (2014) group these failures into four categories: account and service
+            hijacking, malicious insiders, weak authentication, and poor handling of privileged accounts.</p>
+
+          <p data-typewriter>A stolen password grants an attacker the exact same access as the legitimate employee. The system does not
+            flag the intrusion, because it reads the attacker as a normal user. Confidentiality, integrity, and
+            availability all fail at once.</p>
+
+          <p data-typewriter>Phishing remains the most common route to stolen credentials. The weakness sits with people, not
+            technology, which is an uncomfortable finding for organisations that assume more security tools will fix the
+            problem.</p>
+
+          <p data-typewriter>Alghofaili et al. (2021) point to a separate issue: infrastructure changes fast under IaaS elasticity, and
+            access controls set up once quickly go stale. Shared multi-tenant resources compound this, letting
+            authenticated users reach data they were never meant to see. Jansen and Grance (2011, p. 15) put it plainly:
+            without governance, an organisation's own policies and procedures for privacy and security get overlooked,
+            putting the organisation at risk. Access management is not a one-time setup. It needs continuous attention.
+          </p>
+        </div>
+      </article>
+
+      <p class="page__prompt">
+        type <span data-cmd="back">back</span> or press <span class="page__prompt-key">[esc]</span> to return to console
+      </p>
+    </div>
+  </section>
+
+  <!-- Page: Malware -->
+  <section id="page-malware" class="screen screen--page" aria-label="Malware and Ransomware" data-page="malware">
+    <canvas class="page__bg" aria-hidden="true"></canvas>
+
+    <div class="page__inner">
+      <pre class="page__access-log"
+        aria-hidden="true"><span class="page__access-line">&gt; accessing malware.log ...</span><span class="page__access-line">&gt; decrypting ......... OK</span></pre>
+
+      <article class="term-window">
+        <header class="term-window__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="term-window__title">malware.log</span>
+        </header>
+        <div class="term-window__body">
+          <h2 class="term-window__heading" data-typewriter>Malware and Ransomware</h2>
+
+          <p data-typewriter>Cloud infrastructure and the end users who depend on it are both increasingly targeted by malware and
+            ransomware. Spark, a New Zealand telecommunications provider, lost service in September 2014 after attackers
+            installed malware on end-user devices and used them to launch a denial-of-service attack against Spark's
+            cloud services. Spark denied any fault in its own architecture, placing the blame on the infected end-user
+            devices instead (Ahmed &amp; Litchfield, 2018).</p>
+
+          <p data-typewriter>Penjala (2019, p. 2) frames information security as a continuous race, not a fixed target: as threat actors
+            evolve their techniques, organisations need matching effort from security managers, IT specialists, and
+            ordinary staff, not just one department.</p>
+
+          <p data-typewriter>Dawood et al. (2023, p. 1) list the typical risk profile cloud computing faces: data abuse, malicious
+            insiders, insecure interfaces, shared technology weaknesses, data loss, and hijacking. Malware rarely acts
+            alone. It typically exploits a weak account or a careless user, tying this issue directly back to the first
+            two.</p>
+        </div>
+      </article>
+
+      <p class="page__prompt">
+        type <span data-cmd="back">back</span> or press <span class="page__prompt-key">[esc]</span> to return to console
+      </p>
+    </div>
+  </section>
+
+  <!-- Page: About / References -->
+  <section id="page-about" class="screen screen--page" aria-label="References" data-page="about">
+    <div class="page__inner">
+
+      <pre class="page__access-log"
+        aria-hidden="true"><span class="page__access-line">&gt; accessing references.log ...</span><span class="page__access-line">&gt; decrypting ......... OK</span></pre>
+
+      <article class="term-window">
+        <header class="term-window__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="term-window__title">references.log</span>
+        </header>
+        <div class="term-window__body">
+          <h2 class="term-window__heading">References</h2>
+
+          <!-- APA7 Reference List -->
+          <p class="ref-entry">Ahmed, M., &amp; Litchfield, A. T. (2018). Taxonomy for identification of security issues
+            in cloud computing environments. <em>Journal of Computer Information Systems</em>, <em>58</em>(1),
+            79&ndash;88. <a href="https://doi.org/10.1080/08874417.2016.1192520" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.1080/08874417.2016.1192520</a></p>
+
+          <p class="ref-entry">Alghofaili, Y., Albattah, A., Alrajeh, N., Rassam, M. A., &amp; Al-rimy, B. A. S. (2021).
+            Secure cloud infrastructure: A survey on issues, current solutions, and open challenges. <em>Applied
+              Sciences</em>, <em>11</em>(19). <a href="https://doi.org/10.3390/app11199005" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.3390/app11199005</a></p>
+
+          <p class="ref-entry">Dawood, M., Tu, S., Xiao, C., Alasmary, H., Waqas, M., &amp; Rehman, S. U. (2023).
+            Cyberattacks and security of cloud computing: A complete guideline. <em>Symmetry</em>, <em>15</em>(11). <a
+              href="https://doi.org/10.3390/sym15111981" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.3390/sym15111981</a></p>
+
+          <p class="ref-entry">Hashizume, K., Rosado, D. G., Fern&aacute;ndez-Medina, E., &amp; Fernandez, E. B. (2013).
+            An analysis of security issues for cloud computing. <em>Journal of Internet Services and Applications</em>,
+            <em>4</em>. <a href="https://doi.org/10.1186/1869-0238-4-5" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.1186/1869-0238-4-5</a>
+          </p>
+
+          <p class="ref-entry">Jansen, W., &amp; Grance, T. (2011). <em>Guidelines on security and privacy in public
+              cloud computing</em> (NIST Special Publication 800-144). National Institute of Standards and Technology.
+            <a href="https://doi.org/10.6028/NIST.SP.800-144" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.6028/NIST.SP.800-144</a>
+          </p>
+
+          <p class="ref-entry">Jathanna, R., &amp; Jagli, D. (2017). Cloud computing and security issues.
+            <em>International Journal of Engineering Research and Applications</em>, <em>7</em>(6), 31&ndash;38. <a
+              href="https://doi.org/10.9790/9622-0706053138" target="_blank"
+              rel="noopener noreferrer">https://doi.org/10.9790/9622-0706053138</a>
+          </p>
+
+          <p class="ref-entry">Khalil, I. M., Khreishah, A., &amp; Azeem, M. (2014). Cloud computing security: A survey.
+            <em>Computers</em>, <em>3</em>(1), 1&ndash;35. <a href="https://doi.org/10.3390/computers3010001"
+              target="_blank" rel="noopener noreferrer">https://doi.org/10.3390/computers3010001</a>
+          </p>
+
+          <p class="ref-entry">Penjala, J. (2019). <em>Information security management in cloud computing: A case
+              study</em> [Master's thesis, University of Oulu]. University of Oulu Repository.</p>
+        </div>
+      </article>
+
+      <footer class="page__footer">
+        <p>Desandu Hettiarachchi</p>
+        <p>Student ID: 74007597</p>
+        <p>Edith Cowan College</p>
+        <p>SCI1125D Professional Science Essentials</p>
+        <p class="page__footer-links">
+          <a href="https://www.linkedin.com/in/desanduthettiarachchi/" target="_blank"
+            rel="noopener noreferrer">LinkedIn</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="https://github.com/Desandu7000" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </p>
+        <p class="page__footer-note">Built with HTML, CSS, and JavaScript.</p>
+      </footer>
+
+      <p class="page__prompt">
+        type <span data-cmd="back">back</span> or press <span class="page__prompt-key">[esc]</span> to return to console
+      </p>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

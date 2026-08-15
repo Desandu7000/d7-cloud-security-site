@@ -1,0 +1,1228 @@
+/* ============================================================================
+   D7 — Cloud Computing and Security Issues
+   styles.css
+
+   Sections:
+     01. Design tokens (custom properties)
+     02. Reset & base
+     03. Utilities
+     04. Texture overlays (grid / scanlines / vignette)
+     05. Screen system (intro <-> console cross-fade)
+     06. Intro screen
+     07. Console screen
+     07b. Content pages (terminal-window, background canvas, video, footer)
+     08. Site logo
+     09. Responsive breakpoints
+     10. Reduced-motion / accessibility fallbacks
+   ========================================================================== */
+
+
+/* ---------------------------------------------------------------------------
+   01. DESIGN TOKENS
+   Everything colour-, spacing- and timing-related lives here as a CSS custom
+   property, so the whole site can be re-themed from one block.
+   Palette: deep navy base, cyan primary accent, amber secondary accent.
+   Deliberately avoids the cliché pure-green-on-black terminal look.
+--------------------------------------------------------------------------- */
+:root {
+  /* Backgrounds — layered from darkest (page) to lightest (raised panel) */
+  --bg-void:      #05070d;   /* page background, near-black navy */
+  --bg-deep:      #080c16;
+  --bg-panel:     #0d1220;   /* terminal window body */
+  --bg-chrome:    #141b2c;   /* terminal window title bar */
+
+  /* Accents */
+  --accent:       #46e6d0;   /* neon cyan — primary */
+  --accent-dim:   #1f8f83;
+  --accent-glow:  rgba(70, 230, 208, 0.35);
+  --amber:        #ffb454;   /* amber — secondary accent / warnings */
+  --amber-glow:   rgba(255, 180, 84, 0.28);
+
+  /* Text — body copy is off-white, never neon, so it stays readable */
+  --text:         #e6ebf2;   /* headings on dark */
+  --text-body:    #c3ccd9;   /* paragraphs */
+  --text-muted:   #7d8798;   /* captions, hints */
+  --text-faint:   #4a5364;
+
+  /* Lines */
+  --line:         rgba(255, 255, 255, 0.08);
+  --line-accent:  rgba(70, 230, 208, 0.22);
+
+  /* Type */
+  --font-mono: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, 'Cascadia Mono',
+               Consolas, monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               Helvetica, Arial, sans-serif;
+
+  /* Fluid type scale — clamp(min, preferred, max) keeps text sized to the
+     viewport without needing a media query for every step. */
+  --fs-title:  clamp(1.75rem, 6.2vw, 4.75rem);
+  --fs-sup:    clamp(0.8rem, 2.2vw, 1.35rem);
+  --fs-body:   clamp(0.95rem, 0.4vw + 0.9rem, 1.0625rem);
+  --fs-small:  clamp(0.72rem, 1.6vw, 0.875rem);
+
+  /* Spacing */
+  --gap-xs: 0.5rem;
+  --gap-sm: 0.875rem;
+  --gap-md: 1.5rem;
+  --gap-lg: 2.5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fade: 700ms;
+}
+
+
+/* ---------------------------------------------------------------------------
+   02. RESET & BASE
+--------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background-color: var(--bg-void);
+  /* Two very soft radial washes give the flat background some depth without
+     costing an image request. */
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(70, 230, 208, 0.07), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 115%, rgba(255, 180, 84, 0.05), transparent 70%);
+  background-attachment: fixed;
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* While the intro plays the page must not scroll. JS removes this class
+   once the console takes over. */
+body.is-locked { overflow: hidden; }
+
+button { font: inherit; color: inherit; }
+
+/* A single visible focus style for keyboard users across the whole site. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+
+/* ---------------------------------------------------------------------------
+   03. UTILITIES
+--------------------------------------------------------------------------- */
+
+/* Visually hidden, still announced by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ---------------------------------------------------------------------------
+   04. TEXTURE OVERLAYS
+   Three fixed, non-interactive layers. Each is a pure-CSS gradient, so there
+   are no image downloads and the whole texture costs ~0 bytes of network.
+--------------------------------------------------------------------------- */
+.fx-grid,
+.fx-scanlines,
+.fx-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;   /* clicks pass straight through */
+  z-index: 900;
+}
+
+/* Blueprint grid: two repeating-linear-gradients crossed at 90 degrees. */
+.fx-grid {
+  background-image:
+    repeating-linear-gradient(to right,
+      rgba(70, 230, 208, 0.05) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom,
+      rgba(70, 230, 208, 0.05) 0 1px, transparent 1px 64px);
+  /* Fade the grid out towards the edges so it reads as texture, not a table. */
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, #000 30%, transparent 100%);
+          mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, #000 30%, transparent 100%);
+  opacity: 0.9;
+}
+
+/* CRT scanlines: 1px dark stripe every 3px. Kept very low contrast. */
+.fx-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0 1px,
+    transparent 1px 3px
+  );
+  opacity: 0.5;
+  z-index: 901;
+}
+
+/* Vignette: darkens the corners like a curved monitor. */
+.fx-vignette {
+  background: radial-gradient(ellipse 80% 70% at 50% 50%,
+              transparent 45%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 902;
+}
+
+
+/* ---------------------------------------------------------------------------
+   05. SCREEN SYSTEM
+   Each "screen" is a full-viewport layer stacked in the same place.
+   Only the one carrying .is-active is visible and interactive; JS swaps the
+   class to cross-fade between them. Because we animate opacity + transform
+   only (never width/height/top), the browser can keep this on the GPU.
+--------------------------------------------------------------------------- */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-md);
+
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity     var(--dur-fade) var(--ease-out),
+    visibility  0s linear var(--dur-fade);
+  z-index: 10;
+}
+
+.screen.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity     var(--dur-fade) var(--ease-out),
+    visibility  0s linear 0s;
+  z-index: 20;
+}
+
+/* The intro sits above the console during the hand-off so it fades out
+   *over* the incoming screen rather than revealing it mid-fade. */
+.screen--intro { z-index: 30; }
+.screen--intro.is-active { z-index: 40; }
+
+/* When the intro is dismissed it also scales up very slightly — the small
+   push outwards is what sells the "title dissolving into the system" beat. */
+.screen--intro { transform: scale(1.06); transition-property: opacity, visibility, transform; }
+.screen--intro.is-active { transform: scale(1); }
+
+
+/* ---------------------------------------------------------------------------
+   06. INTRO SCREEN
+--------------------------------------------------------------------------- */
+.intro__inner {
+  width: min(1100px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--gap-md);
+}
+
+/* --- Fake boot log ------------------------------------------------------ */
+.boot-log {
+  margin: 0;
+  min-height: 7.5em;                 /* reserved height stops the title from
+                                        jumping as lines are appended */
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-faint);
+  text-align: left;
+  white-space: pre;
+  letter-spacing: 0.04em;
+
+  /* Older lines dim towards the top, newest line is brightest. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%);
+          mask-image: linear-gradient(to bottom, transparent, #000 55%);
+
+  transition: opacity 500ms var(--ease-out);
+}
+.boot-log .ok { color: var(--accent-dim); }
+
+/* Once the title starts typing, the boot log recedes. */
+.boot-log.is-dimmed { opacity: 0.25; }
+
+/* --- Title -------------------------------------------------------------- */
+.intro-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+
+  /* The caret is positioned relative to the whole title block. */
+  position: relative;
+}
+
+/* "D7 presents:" — the small supporting line */
+.intro-title__line--presents {
+  font-size: var(--fs-sup);
+  color: var(--amber);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px var(--amber-glow);
+}
+
+/* "Cloud Computing and Security Issues" — the hero line */
+.intro-title__line--main {
+  font-size: var(--fs-title);
+  color: var(--text);
+  letter-spacing: 0.02em;
+  /* Layered glow: tight white core, wide cyan halo. This is the
+     "Netflix logo" light bloom. */
+  text-shadow:
+    0 0 2px  rgba(255, 255, 255, 0.5),
+    0 0 22px var(--accent-glow),
+    0 0 60px rgba(70, 230, 208, 0.18);
+  max-width: 20ch;                    /* forces a natural 2-3 line wrap */
+  text-wrap: balance;
+}
+
+/* --- Blinking caret ----------------------------------------------------- */
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.12em;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
+  vertical-align: text-bottom;
+
+  /* The caret is absolutely positioned by JS onto whichever line is
+     currently being typed; these are its resting styles. */
+  position: absolute;
+  animation: caret-blink 1s steps(1, end) infinite;
+}
+
+@keyframes caret-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* While characters are actively being typed the caret stays solid —
+   blinking only resumes on a pause. Feels much more like a real terminal. */
+.caret.is-typing { animation: none; opacity: 1; }
+.caret.is-hidden { opacity: 0 !important; animation: none; }
+
+/* --- Subtitle ----------------------------------------------------------- */
+.intro-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity   800ms var(--ease-out),
+    transform 800ms var(--ease-out);
+}
+.intro-sub.is-visible { opacity: 1; transform: none; }
+
+/* Thin cyan rule that draws itself outwards from the centre. */
+.intro-sub__rule {
+  display: block;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(to right,
+              transparent, var(--accent), transparent);
+  transition: width 900ms 150ms var(--ease-out);
+}
+.intro-sub.is-visible .intro-sub__rule { width: min(360px, 70vw); }
+
+.intro-sub__text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* --- Skip button -------------------------------------------------------- */
+.skip-btn {
+  position: absolute;
+  right: clamp(1rem, 4vw, 2.5rem);
+  bottom: clamp(1rem, 4vw, 2.5rem);
+  z-index: 50;
+
+  padding: 0.6em 1.1em;
+  background: rgba(13, 18, 32, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  transition: color 220ms, border-color 220ms, background-color 220ms;
+}
+
+.skip-btn:hover,
+.skip-btn:focus-visible {
+  color: var(--accent);
+  border-color: var(--line-accent);
+  background: rgba(70, 230, 208, 0.07);
+}
+
+.skip-btn__key { color: var(--text-faint); margin-left: 0.4em; }
+.skip-btn:hover .skip-btn__key { color: var(--accent-dim); }
+
+/* --- Typing-sound toggle --------------------------------------------------
+   Same pill styling as the skip button. Lives outside any single screen
+   (position: fixed, like .site-logo) so it stays usable across both places
+   typing happens — the intro and the console — rather than disappearing
+   once the intro hands off. script.js hides it while a content page is
+   open, since there's nothing to type there. */
+.sound-toggle {
+  position: fixed;
+  left: clamp(1rem, 4vw, 2.5rem);
+  bottom: clamp(1rem, 4vw, 2.5rem);
+  z-index: 950;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6em 1.1em;
+  background: rgba(13, 18, 32, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  transition: color 220ms, border-color 220ms, background-color 220ms;
+}
+.sound-toggle:hover,
+.sound-toggle:focus-visible {
+  color: var(--accent);
+  border-color: var(--line-accent);
+  background: rgba(70, 230, 208, 0.07);
+}
+/* `.sound-toggle`'s own `display: flex` above ties the browser default
+   `[hidden] { display: none }` rule on specificity, and — being ours,
+   declared later — wins the cascade, so script.js's setAttribute('hidden')
+   silently did nothing without this override forcing it back to none. */
+.sound-toggle[hidden] {
+  display: none;
+}
+.sound-toggle[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--line-accent);
+}
+
+
+/* ---------------------------------------------------------------------------
+   07. CONSOLE SCREEN
+--------------------------------------------------------------------------- */
+.console__inner {
+  width: min(760px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  text-align: center;
+}
+
+.console__brand {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: 0.3em;
+  color: var(--text);
+  text-shadow: 0 0 24px var(--accent-glow);
+}
+.console__brand-dot { color: var(--accent); }
+
+.console__ready {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.console__ok { color: var(--accent); }
+
+/* --- Command input ------------------------------------------------------
+   Styled as one continuous terminal line: a ">" prompt symbol, a real
+   <input> (so it's a genuine, accessible text field), and a blinking
+   caret glued to the end of whatever's been typed. The <input>'s own
+   caret is hidden (caret-color: transparent) so only our styled one shows. */
+.console__form {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.85em 1.1em;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(13, 18, 32, 0.6);
+  transition: border-color 220ms, box-shadow 220ms;
+}
+
+.console__form:focus-within {
+  border-color: var(--line-accent);
+  box-shadow: 0 0 0 3px rgba(70, 230, 208, 0.08), 0 0 24px rgba(70, 230, 208, 0.06);
+}
+
+.console__prompt-symbol {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: var(--fs-body);
+  flex: none;
+}
+
+.console__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  color: var(--text);
+  letter-spacing: 0.02em;
+  caret-color: transparent;   /* the .console__caret element does this job */
+}
+.console__input::placeholder { color: var(--text-faint); }
+.console__input:focus { outline: none; }
+
+.console__caret {
+  flex: none;
+  width: 0.55em;
+  height: 1.15em;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  animation: caret-blink 1s steps(1, end) infinite;
+}
+
+/* Line that reports invalid commands. Reserves its height at all times so
+   the layout doesn't jump when the message appears/disappears. */
+.console__feedback {
+  min-height: 1.4em;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--amber);
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+.console__feedback.is-visible { opacity: 1; }
+
+.console__hint {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+.console__hint span {
+  color: var(--amber);
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: border-color 180ms, color 180ms;
+}
+.console__hint span:hover,
+.console__hint span:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+/* Small, understated session counter, corner of the console screen only —
+   it does not follow the user onto the content pages. */
+.console__counter {
+  position: absolute;
+  right: clamp(0.75rem, 3vw, 1.5rem);
+  bottom: clamp(0.75rem, 3vw, 1.5rem);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+
+/* ---------------------------------------------------------------------------
+   07b. CONTENT PAGES
+   Each page opens like a file being read: two "access log" lines, then a
+   terminal-window card holding the actual written content. Body copy is
+   deliberately off-white/light-gray (var(--text-body)) rather than neon —
+   long paragraphs in a glowing accent colour are unreadable.
+--------------------------------------------------------------------------- */
+.screen--page { align-items: flex-start; overflow-y: auto; padding-block: var(--gap-lg); }
+
+.page__inner {
+  width: min(760px, 100%);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+
+  /* Sits above the background canvas (z-index: 0, see .page__bg below)
+     within this page's own stacking context. */
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Decorative background canvas ----------------------------------------
+   One <canvas> per page, drawn and animated by script.js (Stage 3). Fixed
+   positioning keeps it pinned to the viewport rather than scrolling with
+   the (potentially tall) content, and it sits low-opacity behind
+   .page__inner via the stacking order above. */
+.page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* --- Access log (the two lines above the window) ------------------------ */
+.page__access-log {
+  margin: 0;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  white-space: pre-wrap;
+}
+.page__access-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
+}
+.page__access-line:nth-child(2) { color: var(--accent-dim); transition-delay: 220ms; }
+
+/* --- Terminal window container ------------------------------------------
+   The reusable "file viewer" chrome: a title bar with Mac-style traffic-
+   light dots, and a body that holds whatever content is passed in. */
+.term-window {
+  position: relative;   /* containing block for the .is-typing hint below */
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  overflow: hidden;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 480ms 420ms var(--ease-out), transform 480ms 420ms var(--ease-out);
+}
+
+/* Small discoverability hint while script.js (Stage 2) is mid-typewriter —
+   generated content rather than a permanent DOM element, since it only
+   ever needs to exist for the handful of seconds text is actively typing. */
+.term-window.is-typing::after {
+  content: 'click to reveal instantly';
+  position: absolute;
+  right: 0.9em;
+  bottom: 0.6em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+/*
+  Reveal state.
+  `.screen--page` gets `.is-revealed` added by script.js each time the page
+  is opened (not just once on load) — see the router's `showPage()`. Using a
+  toggled class + transitions (rather than a @keyframes animation with
+  `forwards`) is what lets this replay every visit instead of only firing
+  once when the element first enters the DOM.
+*/
+.screen--page.is-revealed .page__access-line { opacity: 1; transform: none; }
+.screen--page.is-revealed .term-window       { opacity: 1; transform: none; }
+
+.term-window__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 0.9em;
+  background: var(--bg-chrome);
+  border-bottom: 1px solid var(--line);
+}
+
+.term-dot {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  flex: none;
+}
+.term-dot--red   { background: #ff5f56; }
+.term-dot--amber { background: #ffbd2e; }
+.term-dot--green { background: #27c93f; }
+
+.term-window__title {
+  margin-left: 0.4em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.term-window__body {
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+}
+
+.term-window__heading {
+  margin: 0 0 var(--gap-md);
+  font-family: var(--font-mono);
+  font-size: clamp(1.15rem, 3vw, 1.6rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* Body copy: off-white/light-gray sans-serif, generous line height — this
+   is the readable "document" register, distinct from the neon terminal
+   voice used everywhere else on the site. */
+.term-window__body p {
+  margin: 0 0 var(--gap-md);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  text-align: left;
+}
+.term-window__body p:last-child { margin-bottom: 0; }
+
+/* --- Text intro / outro ---------------------------------------------------
+   Two different reveal mechanisms share this window, split by whether an
+   element carries [data-typewriter]:
+
+     - [data-typewriter] elements (the heading + body paragraphs on the
+       three prose pages) are typed and erased character-by-character by
+       script.js (Stage 2) directly via textContent — the empty-to-full
+       text IS the reveal, so these are excluded from the opacity/transform
+       treatment below entirely; they're always at full opacity.
+
+     - Everything else (the video block, and the reference list's entries
+       and heading on the "about" page, which contain real inline markup —
+       <em>/<a> — that a character typewriter would have to tear apart and
+       isn't worth the complexity for) keeps the original fade-up stagger,
+       triggered by the ancestor .is-revealed class, with the per-child
+       delay hand-written below since CSS can't multiply a step value by
+       the child index. Covers up to 12 items — more than the longest page
+       (the reference list) needs. The video block is the one exception
+       that needs a delay NOT tied to its ancestor (typing finishes at a
+       variable time) — script.js adds .is-typed-in to it directly instead;
+       see the override at the end of this block. */
+.term-window__body > *:not([data-typewriter]) {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 480ms var(--ease-out), transform 480ms var(--ease-out);
+}
+.screen--page.is-revealed .term-window__body > *:not([data-typewriter]) { opacity: 1; transform: none; }
+
+.term-window__body > *:not([data-typewriter]):nth-child(1)  { transition-delay: 480ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(2)  { transition-delay: 535ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(3)  { transition-delay: 590ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(4)  { transition-delay: 645ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(5)  { transition-delay: 700ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(6)  { transition-delay: 755ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(7)  { transition-delay: 810ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(8)  { transition-delay: 865ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(9)  { transition-delay: 920ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(10) { transition-delay: 975ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(11) { transition-delay: 1030ms; }
+.term-window__body > *:not([data-typewriter]):nth-child(12) { transition-delay: 1085ms; }
+
+/* The video block's own reveal trigger, set by script.js once typing
+   finishes — placed after the nth-child rules above so it wins the
+   cascade on the (otherwise tied) specificity. */
+.term-window__video.is-typed-in {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0ms;
+}
+
+/* Outro (non-typed elements only — typed ones are erased by script.js
+   instead, see above): drops out together, quickly and with no stagger,
+   right before the screen itself cross-fades to the console. */
+.screen--page.is-leaving .page__access-log,
+.screen--page.is-leaving .term-window,
+.screen--page.is-leaving .term-window__body > *:not([data-typewriter]) {
+  transition: opacity 240ms ease-in, transform 240ms ease-in !important;
+  transition-delay: 0ms !important;
+  opacity: 0 !important;
+  transform: translateY(-10px) !important;
+}
+
+.term-window__note {
+  color: var(--text-muted) !important;
+  font-style: italic;
+}
+
+/* Hanging-indent style ready for the APA7 reference list. */
+.ref-entry {
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+/* Video embed: fixed 16:9 aspect ratio using the padding-top trick, so it
+   never distorts on resize and needs no JS to size itself. */
+.term-window__video {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  margin: var(--gap-md) 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.term-window__video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Unmute control. The video always starts muted (autoplay policy), so this
+   button is the only way sound turns on — it needs to be easy to find. */
+.term-window__video-unmute {
+  position: absolute;
+  right: 0.75em;
+  bottom: 0.75em;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.5em 0.85em;
+  border: 1px solid var(--line-accent);
+  border-radius: 5px;
+  background: rgba(8, 12, 22, 0.78);
+  backdrop-filter: blur(3px);
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.06em;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 180ms, background-color 180ms;
+}
+.term-window__video-unmute:hover,
+.term-window__video-unmute:focus-visible {
+  border-color: var(--accent);
+  background: rgba(70, 230, 208, 0.14);
+}
+.term-window__video-unmute[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* --- Video fallback card ---------------------------------------------------
+   Used instead of the iframe when a video can't be embedded (see the HTML
+   comment above this markup for why). Same 16:9 box as the real embed
+   (.term-window__video), just filled with a clickable thumbnail + caption
+   instead of a player. */
+.term-window__video--fallback {
+  display: block;
+  text-decoration: none;
+  background: #000;
+}
+.term-window__video-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+  transition: opacity 220ms;
+}
+.term-window__video--fallback:hover .term-window__video-thumb,
+.term-window__video--fallback:focus-visible .term-window__video-thumb {
+  opacity: 0.7;
+}
+.term-window__video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% - 1.1em));
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2em;
+  height: 3.2em;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  background: rgba(70, 230, 208, 0.16);
+  box-shadow: 0 0 24px var(--accent-glow);
+
+  font-size: 1.15rem;
+  color: var(--accent);
+  transition: transform 220ms, background-color 220ms;
+}
+.term-window__video--fallback:hover .term-window__video-play,
+.term-window__video--fallback:focus-visible .term-window__video-play {
+  transform: translate(-50%, calc(-50% - 1.1em)) scale(1.08);
+  background: rgba(70, 230, 208, 0.28);
+}
+.term-window__video-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 1em;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: 88%;
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.03em;
+  color: var(--text);
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* --- Footer (author / institution details, references page) -------------- */
+.page__footer {
+  width: 100%;
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--line);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  text-align: center;
+}
+.page__footer p {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+.page__footer p:first-child { color: var(--text); }
+
+/* Understated build credit — smaller and dimmer than the rest of the
+   footer, so it reads as a footnote rather than part of the cover details.
+   (Selector is deliberately ".page__footer p.page__footer-note" so it
+   out-specifies the plain ".page__footer p" rule above without !important.) */
+.page__footer p.page__footer-note {
+  margin-top: 0.5em;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+/* Personal links — sits with the author details, ahead of the build note. */
+.page__footer p.page__footer-links {
+  margin-top: 0.35em;
+  display: flex;
+  justify-content: center;
+  gap: 0.6em;
+}
+.page__footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+  transition: color 180ms, border-color 180ms;
+}
+.page__footer-links a:hover,
+.page__footer-links a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+.page__footer-links span { color: var(--text-faint); }
+
+/* --- Return prompt -------------------------------------------------------- */
+.page__prompt {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.page__prompt span[data-cmd] {
+  color: var(--amber);
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: border-color 180ms, color 180ms;
+}
+.page__prompt span[data-cmd]:hover,
+.page__prompt span[data-cmd]:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+.page__prompt-key { color: var(--text-faint); }
+
+
+/* ---------------------------------------------------------------------------
+   08. SITE LOGO
+   Fixed top-left, shared by the console and every content page. Hidden
+   during the intro and faded in once script.js hands off to the console
+   (see enterConsole() in script.js) — it never appears on screen--intro.
+--------------------------------------------------------------------------- */
+.site-logo {
+  position: fixed;
+  top: clamp(0.75rem, 3vw, 1.5rem);
+  left: clamp(0.75rem, 3vw, 1.5rem);
+  z-index: 950;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms var(--ease-out);
+}
+.site-logo.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.site-logo__link {
+  display: block;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.site-logo__mark {
+  position: relative;   /* containing block for the ::after glow ring below */
+  display: block;
+  width: clamp(2.5rem, 6vw, 3rem);
+  height: clamp(2.5rem, 6vw, 3rem);
+  border-radius: 50%;
+  border: 1px solid var(--line-accent);
+  object-fit: cover;
+  background: var(--bg-panel);   /* shows briefly while the image loads */
+
+  transition: border-color 180ms;
+}
+.site-logo__link:hover .site-logo__mark,
+.site-logo__link:focus-visible .site-logo__mark {
+  border-color: var(--accent);
+}
+
+/* Animated "breathing" glow — a slow pulse behind the mark, on an
+   independent ::after layer (z-index: -1) so it never fights with the
+   hover state above, which only touches the mark's own border colour.
+   Frozen to a single frame under prefers-reduced-motion by the global rule
+   in section 10, same as every other animation on the site. */
+.site-logo__mark::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: logo-breathe 3.6s ease-in-out infinite;
+}
+@keyframes logo-breathe {
+  0%, 100% { box-shadow: 0 0 6px 0 rgba(70, 230, 208, 0.18); }
+  50%      { box-shadow: 0 0 20px 4px rgba(70, 230, 208, 0.5); }
+}
+
+
+/* ---------------------------------------------------------------------------
+   08b. SMALL-SCREEN BLOCK
+   Hidden by default; the media query at the top of section 09 below is what
+   actually shows it (and hides the real site) below ~768px. Pure CSS is
+   deliberate here — no JS dependency means it works from the very first
+   paint, and live-updates on resize/rotation with no extra code.
+--------------------------------------------------------------------------- */
+.small-screen-block {
+  display: none;   /* becomes flex under the max-width: 767px query below */
+  position: fixed;
+  inset: 0;
+  z-index: 9999;   /* above the logo/sound-toggle (950) and fx overlays (900s) */
+
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+
+  background: var(--bg-void);
+}
+
+.small-screen-block__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.small-screen-block__logo {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--line-accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+  object-fit: cover;
+}
+
+/* Same terminal-window chrome as the content pages (Mac-style dots, title
+   bar) so this reads as part of the same system, not a generic error page. */
+.small-screen-block__window {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  overflow: hidden;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+
+.small-screen-block__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 0.9em;
+  background: var(--bg-chrome);
+  border-bottom: 1px solid var(--line);
+}
+
+.small-screen-block__title {
+  margin-left: 0.4em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.small-screen-block__body {
+  padding: 1.35rem 1.15rem;
+  text-align: left;
+}
+
+.small-screen-block__code {
+  margin: 0 0 0.9em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--amber);
+  letter-spacing: 0.03em;
+}
+
+.small-screen-block__message {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-body);
+  line-height: 1.6;
+}
+
+
+/* ---------------------------------------------------------------------------
+   09. RESPONSIVE
+   The fluid clamp() type scale handles most of the work; these breakpoints
+   only fix the things that genuinely need re-arranging on small screens.
+--------------------------------------------------------------------------- */
+
+/* Below this width, the site itself is not made responsive — the
+   small-screen block above takes over instead (see section 08b) and the
+   real content stays hidden and non-scrollable behind it. */
+@media (max-width: 767px) {
+  .small-screen-block { display: flex; }
+  body { overflow: hidden !important; }
+}
+
+/* Tablet and below */
+@media (max-width: 768px) {
+  .fx-grid {
+    /* Tighter grid so the texture does not look oversized on a phone. */
+    background-image:
+      repeating-linear-gradient(to right,
+        rgba(70, 230, 208, 0.05) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(to bottom,
+        rgba(70, 230, 208, 0.05) 0 1px, transparent 1px 40px);
+  }
+}
+
+/* Phone */
+@media (max-width: 480px) {
+  .boot-log {
+    min-height: 6em;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+
+  .intro-title__line--presents { letter-spacing: 0.2em; }
+  .intro-title__line--main     { max-width: 14ch; }
+
+  /* Wide letter-spacing runs out of room on a narrow screen — tighten it
+     so the subtitle keeps a comfortable margin either side. */
+  .intro-sub__text { letter-spacing: 0.16em; }
+
+  /* Centre the skip button along the bottom — easier thumb target. */
+  .skip-btn {
+    right: 50%;
+    transform: translateX(50%);
+    bottom: 1.25rem;
+  }
+
+  /* Stack the sound toggle above it, also centred, so the two don't
+     collide once both are pinned to the same horizontal centre-line. */
+  .sound-toggle {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 4.25rem;
+  }
+}
+
+/* Short landscape screens (e.g. a phone turned sideways): drop the boot log
+   so the title still fits without scrolling. */
+@media (max-height: 520px) {
+  .boot-log { display: none; }
+  .intro__inner { gap: var(--gap-sm); }
+}
+
+
+/* ---------------------------------------------------------------------------
+   10. REDUCED MOTION
+   Anyone who has asked their OS to reduce motion gets the same content with
+   the movement removed. The typewriter is also short-circuited in script.js,
+   and the per-page canvas backgrounds draw one static frame instead of
+   looping (see prefersReducedMotion() in script.js, Stage 3).
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .screen--intro,
+  .screen--intro.is-active { transform: none; }
+
+  .caret { display: none; }
+}

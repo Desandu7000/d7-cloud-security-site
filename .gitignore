@@ -1,0 +1,34 @@
+# Operating System Files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor & IDE Directories
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+
+# AI & Assistant Configs / Workspaces
+.claude/
+.gemini/
+.agents/
+
+# Temporary / Scratch Files
+*.tmp
+*.temp
+*.log
+scratch/

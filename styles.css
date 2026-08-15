@@ -12,8 +12,10 @@
      07. Console screen
      07b. Content pages (terminal-window, background canvas, video, footer)
      08. Site logo
+     08b. Small-screen block
      09. Responsive breakpoints
      10. Reduced-motion / accessibility fallbacks
+     11. Print stylesheet (references page only)
    ========================================================================== */
 
 
@@ -535,6 +537,10 @@ button { font: inherit; color: inherit; }
   transition: opacity 200ms var(--ease-out);
 }
 .console__feedback.is-visible { opacity: 1; }
+
+/* The "help" response uses this instead of the default amber — reads as
+   informational rather than a warning about bad input. */
+.console__feedback.is-info { color: var(--accent); }
 
 .console__hint {
   margin: 0;
@@ -1225,4 +1231,91 @@ button { font: inherit; color: inherit; }
   .screen--intro.is-active { transform: none; }
 
   .caret { display: none; }
+}
+
+
+/* ---------------------------------------------------------------------------
+   11. PRINT STYLESHEET (references page only)
+   Printing always renders the references page's citation list, regardless
+   of which screen is actually open on-screen when the user prints (Ctrl/Cmd
+   + P) — the report's citations are the one thing worth a paper/PDF copy,
+   so "print" is deliberately tied to that content rather than to whatever
+   happens to be visible. Works by hiding everything by default and only
+   un-hiding the references content, then stripping the terminal chrome
+   (glow, dots, dark background, monospace) down to a plain, readable
+   black-on-white document.
+--------------------------------------------------------------------------- */
+@media print {
+  @page { margin: 2cm; }
+
+  body * { visibility: hidden; }
+  #page-about,
+  #page-about * { visibility: visible; }
+
+  /* #page-about is normally a fixed, viewport-height, opacity/visibility-
+     toggled `.screen`; none of that is useful on paper, where content
+     should simply flow down the page across as many sheets as it needs. */
+  #page-about {
+    position: static !important;
+    inset: auto !important;
+    opacity: 1 !important;
+    transform: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  #page-about .page__inner {
+    width: 100% !important;
+    max-width: none !important;
+    gap: 1em !important;
+  }
+
+  /* Strip the parts that only make sense as a live, on-screen terminal. */
+  #page-about .page__access-log,
+  #page-about .term-window__bar,
+  #page-about .page__prompt {
+    display: none !important;
+  }
+
+  #page-about .term-window {
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  #page-about .term-window__body { padding: 0 !important; }
+
+  /* Swap the neon-glow monospace heading and light-on-dark body copy for
+     a plain serif document register — this is the "un-terminal'd" part. */
+  #page-about .term-window__heading {
+    color: #000 !important;
+    text-shadow: none !important;
+    font-family: Georgia, 'Times New Roman', serif !important;
+    font-size: 18pt !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  #page-about .ref-entry,
+  #page-about .term-window__note {
+    color: #000 !important;
+    font-family: Georgia, 'Times New Roman', serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+  #page-about .ref-entry a {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+
+  #page-about .page__footer {
+    border-top-color: #999 !important;
+  }
+  #page-about .page__footer p,
+  #page-about .page__footer a,
+  #page-about .page__footer span {
+    color: #333 !important;
+    font-family: Georgia, 'Times New Roman', serif !important;
+  }
 }

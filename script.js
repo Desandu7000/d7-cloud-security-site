@@ -504,6 +504,7 @@
   };
 
   var BACK_WORDS = ['back', 'console', 'home', 'exit', 'menu'];
+  var HELP_WORDS = ['help', '?', 'commands'];
 
   /* The CSS text-outro transition collapses to ~0ms under reduced motion
      (see styles.css section 10), so showConsole() skips its matching JS
@@ -518,12 +519,13 @@
   }
 
   /* Returns a page id for a recognised command, 'BACK' for a return command,
-     or null if nothing matched. */
+     'HELP' for a help request, or null if nothing matched. */
   function resolveCommand(raw) {
     var value = normalise(raw);
     if (!value) { return null; }
 
     if (BACK_WORDS.indexOf(value) !== -1) { return 'BACK'; }
+    if (HELP_WORDS.indexOf(value) !== -1) { return 'HELP'; }
 
     for (var pageId in ROUTES) {
       if (ROUTES[pageId].indexOf(value) !== -1) { return pageId; }
@@ -906,12 +908,22 @@
 
   function clearFeedback() {
     el.feedback.textContent = '';
-    el.feedback.classList.remove('is-visible');
+    el.feedback.classList.remove('is-visible', 'is-info');
   }
 
+  /* Unrecognised-command warning — amber, via the default .console__feedback
+     colour (see styles.css). */
   function showFeedback(message) {
     el.feedback.textContent = message;
+    el.feedback.classList.remove('is-info');
     el.feedback.classList.add('is-visible');
+  }
+
+  /* "help" response — same line, but cyan/informational rather than a
+     warning (.is-info overrides the default amber). */
+  function showHelp() {
+    el.feedback.textContent = 'commands: data breach · iam · malware · about — "back" returns from any page';
+    el.feedback.classList.add('is-visible', 'is-info');
   }
 
   function runCommand(raw) {
@@ -929,6 +941,13 @@
          word again — would silently do nothing instead of reaching
          showConsole()'s own skip-the-outro handling. */
       if (activePage || isLeaving) { showConsole(); }
+      return;
+    }
+
+    if (result === 'HELP') {
+      /* Console-only — the command line itself is hidden on content pages,
+         so this is never reachable from there anyway. */
+      if (!activePage) { showHelp(); }
       return;
     }
 
@@ -962,6 +981,44 @@
      hand-filtering individual key codes. */
   el.input.addEventListener('input', function () {
     if (window.D7Sound) { window.D7Sound.play(); }
+  });
+
+  /* Tab-completion, like a real shell: partial "mal" + Tab -> "malware".
+     Completes against the primary command words shown in the hint line
+     (not every alias — completing to a word the user can actually see
+     listed is what makes this discoverable rather than a guessing game).
+     Multiple matches complete to their longest common prefix instead of
+     doing nothing; with this small a command set that's rare in practice
+     (every command happens to start with a different letter), but it's a
+     reasonable fallback if the list ever grows. */
+  var TAB_COMPLETIONS = ['data breach', 'iam', 'malware', 'about', 'back', 'help'];
+
+  function longestCommonPrefix(words) {
+    var prefix = words[0];
+    for (var i = 1; i < words.length; i++) {
+      while (words[i].indexOf(prefix) !== 0) {
+        prefix = prefix.slice(0, -1);
+        if (!prefix) { return ''; }
+      }
+    }
+    return prefix;
+  }
+
+  el.input.addEventListener('keydown', function (event) {
+    if (event.key !== 'Tab') { return; }
+    event.preventDefault();   /* don't let focus tab away from the input */
+
+    var value = normalise(el.input.value);
+    if (!value) { return; }
+
+    var matches = TAB_COMPLETIONS.filter(function (word) { return word.indexOf(value) === 0; });
+    if (!matches.length) { return; }
+
+    var completion = matches.length === 1 ? matches[0] : longestCommonPrefix(matches);
+    if (completion && completion !== value) {
+      el.input.value = completion;
+      if (window.D7Sound) { window.D7Sound.play(); }   /* setting .value directly doesn't fire 'input', so this needs its own sound cue */
+    }
   });
 
   /* Clicking a highlighted word (in the hint line or a page's return prompt)

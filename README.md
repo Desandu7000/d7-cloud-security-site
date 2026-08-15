@@ -20,11 +20,12 @@ Rather than a static document, the content is delivered through an interactive t
 
 ## 🛠️ Technical Features & Implementation
 
-- **Command-Line Interface & Routing**: Lightweight custom routing in JavaScript that parses user commands, supports aliases, and manages screen transitions.
-- **Dynamic Typewriter Presentation**: Sequential text rendering for headings and paragraphs with an instant-skip option (`[Esc]` key or click).
-- **Procedural Canvas Visualizations**: Canvas-based background animations representing the security concepts (falling data fragments, access scanning waves, and infection network graphs).
+- **Command-Line Interface & Routing**: Lightweight custom routing in JavaScript that parses user commands, supports aliases, and manages screen transitions. Includes a `help` command and shell-style Tab-completion (`mal` + `Tab` → `malware`).
+- **Dynamic Typewriter Presentation**: Sequential text rendering for headings and paragraphs, with the reverse animation (character-by-character erase) playing when a page is closed. Instant-skip via click (typing in) or a second `Esc`/`back` (erasing out).
+- **Procedural Canvas Visualizations**: Canvas-based background animations representing the security concepts (falling data fragments, access scanning waves, and an infection network graph with a deterministic spread pattern).
 - **Synthesized Audio (Web Audio API)**: Real-time procedural keyboard click sounds generated via filtered noise bursts without requiring external audio media files (includes mute/unmute control).
-- **Desktop Optimization & Error Handling**: Designed for desktop/laptop displays. Viewports under 768px display a styled resolution notice (`viewport_error.log`).
+- **Print Stylesheet**: Printing (Ctrl/Cmd+P) always renders a clean, black-on-white, un-terminal'd version of the references page — regardless of which screen happens to be open — for anyone who wants a paper or PDF copy of the citations.
+- **Desktop Optimization & Error Handling**: Designed for desktop/laptop displays. Viewports under ~768px display a styled resolution notice (`viewport_error.log`) instead of the site, implemented in pure CSS.
 - **Accessibility & Motion Consideration**: Supports `prefers-reduced-motion` media queries by bypassing animations and rendering static layouts.
 
 ---
@@ -59,8 +60,9 @@ Open `http://localhost:3000` in your web browser.
 | `malware` | `ransomware`, `malware and ransomware` | View Malware/Ransomware analysis (`malware.log`) |
 | `about` | `references`, `refs`, `reference` | View APA7 References & Author details (`references.log`) |
 | `back` | `console`, `home`, `exit`, `menu` | Return to main command console |
+| `help` | `?`, `commands` | Lists the available commands |
 
-*Tip: Pressing `[Esc]` returns to the console or skips in-progress typing animations.*
+*Tips: `[Esc]` returns to the console (press again mid-transition to skip the closing animation). `[Tab]` autocompletes a partial command. Clicking a page's text while it's typing in reveals it instantly.*
 
 ---
 

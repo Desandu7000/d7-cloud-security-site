@@ -20,13 +20,13 @@ Rather than a static document, the content is delivered through an interactive t
 
 ## 🛠️ Technical Features & Implementation
 
-- **Command-Line Interface & Routing**: Lightweight custom routing in JavaScript that parses user commands, supports aliases, and manages screen transitions. Includes a `help` command and shell-style Tab-completion (`mal` + `Tab` → `malware`).
-- **Dynamic Typewriter Presentation**: Sequential text rendering for headings and paragraphs, with the reverse animation (character-by-character erase) playing when a page is closed. Instant-skip via click (typing in) or a second `Esc`/`back` (erasing out).
-- **Procedural Canvas Visualizations**: Canvas-based background animations representing the security concepts (falling data fragments, access scanning waves, and an infection network graph with a deterministic spread pattern).
-- **Synthesized Audio (Web Audio API)**: Real-time procedural keyboard click sounds generated via filtered noise bursts without requiring external audio media files (includes mute/unmute control).
-- **Print Stylesheet**: Printing (Ctrl/Cmd+P) always renders a clean, black-on-white, un-terminal'd version of the references page — regardless of which screen happens to be open — for anyone who wants a paper or PDF copy of the citations.
-- **Desktop Optimization & Error Handling**: Designed for desktop/laptop displays. Viewports under ~768px display a styled resolution notice (`viewport_error.log`) instead of the site, implemented in pure CSS.
-- **Accessibility & Motion Consideration**: Supports `prefers-reduced-motion` media queries by bypassing animations and rendering static layouts.
+- **Command-Line Interface & Routing**: Custom JavaScript router that parses commands, supports case-insensitive aliases, and manages screen transitions. Features tab-completion, inline ghost text suggestions, and a dynamic measuring caret.
+- **Sequential Text Rendering**: Character-by-character typewriter presentation for headings and paragraphs, with reverse erase transitions and instant-skip support (`[Esc]` or click).
+- **Procedural Canvas Visualizations**: Lightweight, hardware-accelerated 2D canvas background simulations representing data fragmentation, scanning access grids, and network infection spread.
+- **Procedural Web Audio Synthesis**: Real-time synthesized keyboard click feedback via filtered noise bursts using the Web Audio API, eliminating external media asset dependencies.
+- **Print Stylesheet**: Dedicated print media styles (`@media print`) rendering a clean, black-and-white academic citation view regardless of the current active screen.
+- **Desktop Optimization**: Styled layout tailored for desktop screen viewports, providing a resolution warning notice for smaller displays.
+- **Accessibility**: Respects `prefers-reduced-motion` preferences by instantly completing animations and displaying static views.
 
 ---
 

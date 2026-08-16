@@ -465,6 +465,8 @@
     console:   document.getElementById('console'),
     form:      document.getElementById('console-form'),
     input:     document.getElementById('console-input'),
+    ghost:     document.getElementById('console-ghost'),
+    caret:     document.getElementById('console-caret'),
     feedback:  document.getElementById('console-feedback'),
     counter:   document.querySelector('[data-counter-value]'),
     soundBtn:  document.getElementById('sound-toggle'),
@@ -889,6 +891,8 @@
   function finishShowConsole() {
     el.console.classList.add('is-active');
     el.input.value = '';
+    updateGhost();
+    updateCaretPosition();
     clearFeedback();
     /* Return focus to the command line so the user can type again straight
        away, without forcing a click first. */
@@ -921,8 +925,20 @@
 
   /* "help" response — same line, but cyan/informational rather than a
      warning (.is-info overrides the default amber). */
+  /* The response is built as HTML (not textContent) so each command is a
+     real clickable [data-cmd] word, same as the hint line and every page's
+     "back" prompt — the existing document-level click listener further
+     down already handles these for free, nothing extra to wire up. Safe to
+     use innerHTML here since every character comes from this fixed string,
+     never from the user's own input. */
   function showHelp() {
-    el.feedback.textContent = 'commands: data breach · iam · malware · about — "back" returns from any page';
+    el.feedback.innerHTML =
+      'here’s what you can open: ' +
+      '<span data-cmd="data breach">data breach</span> · ' +
+      '<span data-cmd="iam">iam</span> · ' +
+      '<span data-cmd="malware">malware</span> · ' +
+      '<span data-cmd="about">about</span> ' +
+      '— click a word or type it, either works';
     el.feedback.classList.add('is-visible', 'is-info');
   }
 
@@ -973,14 +989,8 @@
     event.preventDefault();
     runCommand(el.input.value);
     el.input.value = '';
-  });
-
-  /* Same typing-click sound as the intro's typewriter, on real keystrokes
-     this time. 'input' fires once per value change (character typed,
-     deleted, or pasted), which is a good enough proxy for "typing" without
-     hand-filtering individual key codes. */
-  el.input.addEventListener('input', function () {
-    if (window.D7Sound) { window.D7Sound.play(); }
+    updateGhost();
+    updateCaretPosition();
   });
 
   /* Tab-completion, like a real shell: partial "mal" + Tab -> "malware".
@@ -990,8 +1000,16 @@
      Multiple matches complete to their longest common prefix instead of
      doing nothing; with this small a command set that's rare in practice
      (every command happens to start with a different letter), but it's a
-     reasonable fallback if the list ever grows. */
+     reasonable fallback if the list ever grows.
+
+     el.ghost (see the HTML/CSS) previews what Tab would do, before you
+     press it — only shown when there's exactly one match, since a
+     longest-common-prefix result isn't really "the" suggestion. */
   var TAB_COMPLETIONS = ['data breach', 'iam', 'malware', 'about', 'back', 'help'];
+
+  function getCompletionMatches(value) {
+    return TAB_COMPLETIONS.filter(function (word) { return word.indexOf(value) === 0; });
+  }
 
   function longestCommonPrefix(words) {
     var prefix = words[0];
@@ -1004,6 +1022,104 @@
     return prefix;
   }
 
+  function updateGhost() {
+    if (!el.ghost) { return; }
+
+    var value = normalise(el.input.value);
+    if (!value) { el.ghost.textContent = ''; return; }
+
+    var matches = getCompletionMatches(value);
+    /* Full completion string, not just the remainder — the CSS overlap
+       trick (see .console__ghost) relies on the ghost's leading
+       characters matching what's already typed, so the input's own
+       opaque text can sit on top of them and hide them. */
+    el.ghost.textContent = (matches.length === 1 && matches[0] !== value) ? matches[0] : '';
+  }
+
+  /* --------------------------------------------------------------------------
+     01c. CARET TRACKING
+     #console-caret is a styled element (glowing box, blink animation — see
+     styles.css), not the input's native cursor, so it needed a way to know
+     the real cursor's pixel position. There's no built-in API for "where is
+     the text cursor, in pixels" on a plain <input>, so this measures it
+     manually: a hidden span (`caretMirror`), styled with the exact same
+     font as the input, is filled with the substring up to the cursor
+     (`selectionStart`) and its rendered width becomes the caret's `left`.
+     Since the caret sits in the same position:relative wrapper as the
+     input, with no padding offset between them, that measured width lines
+     up with the real cursor pixel-for-pixel.
+  -------------------------------------------------------------------------- */
+
+  var caretMirror = document.createElement('span');
+  caretMirror.style.position = 'absolute';
+  caretMirror.style.visibility = 'hidden';
+  caretMirror.style.whiteSpace = 'pre';
+  caretMirror.style.top = '-9999px';
+  caretMirror.style.left = '-9999px';
+  document.body.appendChild(caretMirror);
+
+  function syncCaretMirrorFont() {
+    var computed = window.getComputedStyle(el.input);
+    caretMirror.style.fontFamily = computed.fontFamily;
+    caretMirror.style.fontSize = computed.fontSize;
+    caretMirror.style.fontWeight = computed.fontWeight;
+    caretMirror.style.letterSpacing = computed.letterSpacing;
+  }
+
+  function updateCaretPosition() {
+    if (!el.caret) { return; }
+
+    var cursor = el.input.selectionStart;
+    if (cursor === null || cursor === undefined) { cursor = el.input.value.length; }
+
+    caretMirror.textContent = el.input.value.slice(0, cursor);
+    el.caret.style.left = caretMirror.getBoundingClientRect().width + 'px';
+  }
+
+  /* Solid while characters are actively being typed, blinking once typing
+     pauses — same idea as the intro's own caret, just driven by a short
+     idle timer here instead of the intro's own scripted timeline, since
+     real typing doesn't have a predetermined rhythm to hook into. */
+  var caretIdleTimer = null;
+  function markCaretTyping() {
+    if (!el.caret) { return; }
+    el.caret.classList.add('is-typing');
+    clearTimeout(caretIdleTimer);
+    caretIdleTimer = setTimeout(function () {
+      el.caret.classList.remove('is-typing');
+    }, 500);
+  }
+
+  if (el.caret) {
+    syncCaretMirrorFont();
+    updateCaretPosition();
+    /* The font-size uses a clamp(), so it can change across the same
+       session on window resize — keep the mirror in step with it. */
+    window.addEventListener('resize', function () {
+      syncCaretMirrorFont();
+      updateCaretPosition();
+    });
+  }
+
+  /* Same typing-click sound as the intro's typewriter, on real keystrokes
+     this time. 'input' fires once per value change (character typed,
+     deleted, or pasted), which is a good enough proxy for "typing" without
+     hand-filtering individual key codes. Also keeps the ghost preview and
+     the caret's position in sync with every change, not just Tab presses. */
+  el.input.addEventListener('input', function () {
+    if (window.D7Sound) { window.D7Sound.play(); }
+    updateGhost();
+    updateCaretPosition();
+    markCaretTyping();
+  });
+
+  /* Cursor can also move without the value changing — arrow keys, Home/
+     End, or clicking partway through the text — none of which fire
+     'input'. 'keyup' catches the former; 'click' catches the latter. */
+  el.input.addEventListener('keyup', updateCaretPosition);
+  el.input.addEventListener('click', updateCaretPosition);
+  el.input.addEventListener('focus', updateCaretPosition);
+
   el.input.addEventListener('keydown', function (event) {
     if (event.key !== 'Tab') { return; }
     event.preventDefault();   /* don't let focus tab away from the input */
@@ -1011,7 +1127,7 @@
     var value = normalise(el.input.value);
     if (!value) { return; }
 
-    var matches = TAB_COMPLETIONS.filter(function (word) { return word.indexOf(value) === 0; });
+    var matches = getCompletionMatches(value);
     if (!matches.length) { return; }
 
     var completion = matches.length === 1 ? matches[0] : longestCommonPrefix(matches);
@@ -1019,6 +1135,10 @@
       el.input.value = completion;
       if (window.D7Sound) { window.D7Sound.play(); }   /* setting .value directly doesn't fire 'input', so this needs its own sound cue */
     }
+    /* setting .value directly doesn't fire 'input' either — same reason
+       these need their own calls too. */
+    updateGhost();
+    updateCaretPosition();
   });
 
   /* Clicking a highlighted word (in the hint line or a page's return prompt)
@@ -1034,9 +1154,20 @@
      content is still typing in — the ".is-typing" hint (see styles.css)
      is what tells the user this works. Guarded to only fire while typing
      is actually in progress, so it never interferes with a normal click
-     on "back" or the video card once the text has settled. */
-  document.addEventListener('click', function () {
+     on "back" or the video card once the text has settled.
+
+     Also skips entirely for clicks on a [data-cmd] word. Without that
+     exclusion, clicking a command (rather than typing it) would trigger
+     THIS listener too, on the exact same click: the [data-cmd] handler
+     above runs first, calls showPage(), which calls runPageTypeIn() —
+     and since everything before that function's first `await` runs
+     synchronously, including adding .is-typing, by the time THIS listener
+     runs (same click, later in the chain) it sees typing already "in
+     progress" on the very click that just started it, and immediately
+     skips the intro before it's played at all. */
+  document.addEventListener('click', function (event) {
     if (!activePage) { return; }
+    if (event.target.closest && event.target.closest('[data-cmd]')) { return; }
     var termWindow = activePage.querySelector('.term-window.is-typing');
     if (termWindow) { skipPageTypeIn(activePage); }
   });

@@ -473,10 +473,14 @@ button { font: inherit; color: inherit; }
 .console__ok { color: var(--accent); }
 
 /* --- Command input ------------------------------------------------------
-   Styled as one continuous terminal line: a ">" prompt symbol, a real
-   <input> (so it's a genuine, accessible text field), and a blinking
-   caret glued to the end of whatever's been typed. The <input>'s own
-   caret is hidden (caret-color: transparent) so only our styled one shows. */
+   Styled as one continuous terminal line: a ">" prompt symbol and a real
+   <input> (so it's a genuine, accessible text field). The input's native
+   caret is used directly (just recoloured to match the theme) rather than
+   faked with a separate element — an earlier version had a decorative
+   caret span fixed to the end of the input box, but that never actually
+   tracked the real cursor position, so it sat in the wrong place the
+   moment the field wasn't empty or wasn't full. The browser's own caret
+   already does this correctly for free. */
 .console__form {
   width: 100%;
   display: flex;
@@ -501,28 +505,78 @@ button { font: inherit; color: inherit; }
   flex: none;
 }
 
-.console__input {
+/* Wraps the ghost span + the real input, stacked exactly on top of one
+   another — see the HTML comment above this markup for how the illusion
+   works. Takes over the flex-sizing that used to live on .console__input
+   directly, since the input itself is now 100% of this wrapper instead of
+   a flex child in its own right. */
+.console__input-wrap {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.console__input {
+  position: relative;   /* stacks above .console__ghost, which is absolute */
+  z-index: 1;
+  display: block;
+  width: 100%;
   border: 0;
   background: transparent;
   font-family: var(--font-mono);
   font-size: var(--fs-body);
   color: var(--text);
   letter-spacing: 0.02em;
-  caret-color: transparent;   /* the .console__caret element does this job */
+  caret-color: transparent;   /* hidden — #console-caret below is the real one, and actually tracks the cursor */
 }
 .console__input::placeholder { color: var(--text-faint); }
 .console__input:focus { outline: none; }
 
+/* The autocomplete preview. Identical font metrics to .console__input
+   above is what makes the overlap work — script.js sets this span's text
+   to the FULL suggested command (not just the remainder), so the portion
+   that overlaps what's already typed sits invisibly underneath the real
+   input's own opaque text, and only the un-typed tail peeks out past it. */
+.console__ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The styled caret. script.js positions this with an inline `left` (in px,
+   measured against a hidden font-matched mirror of the input's text up to
+   the real cursor) every time the cursor could have moved — typing,
+   arrow keys, clicking, Tab-completion. The `left` transition is what
+   gives it a quick glide rather than a jump when the cursor makes a
+   bigger move (clicking elsewhere in the text, Tab-completing). */
 .console__caret {
-  flex: none;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;   /* above both the ghost (0) and the input's own text (1) */
   width: 0.55em;
   height: 1.15em;
+  transform: translateY(-50%);
   background: var(--accent);
   box-shadow: 0 0 10px var(--accent-glow);
+  pointer-events: none;
+  transition: left 60ms linear;
   animation: caret-blink 1s steps(1, end) infinite;
 }
+/* Solid (not blinking) while characters are actively being typed — same
+   convention as the intro's own caret (.caret.is-typing). Blinking resumes
+   once typing pauses (script.js debounces this on a short idle timer). */
+.console__caret.is-typing { animation: none; opacity: 1; }
 
 /* Line that reports invalid commands. Reserves its height at all times so
    the layout doesn't jump when the message appears/disappears. */
@@ -541,6 +595,25 @@ button { font: inherit; color: inherit; }
 /* The "help" response uses this instead of the default amber — reads as
    informational rather than a warning about bad input. */
 .console__feedback.is-info { color: var(--accent); }
+
+/* Clickable command words inside the help response — same dotted-underline-
+   on-hover affordance as the hint line and every page's "back" prompt. */
+.console__feedback span[data-cmd] {
+  /* Amber, same as every other clickable word on the site (the hint line,
+     each page's "back" prompt) — against the feedback line's own cyan
+     (.is-info) or amber (default) colour, this is what actually signals
+     "these specific words are clickable" rather than leaving them
+     indistinguishable from the surrounding sentence. */
+  color: var(--amber);
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: border-color 180ms, color 180ms;
+}
+.console__feedback span[data-cmd]:hover,
+.console__feedback span[data-cmd]:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
 
 .console__hint {
   margin: 0;
@@ -1285,6 +1358,18 @@ button { font: inherit; color: inherit; }
     transform: none !important;
   }
   #page-about .term-window__body { padding: 0 !important; }
+
+  /* The heading and each citation only reach opacity: 1 via
+     .screen--page.is-revealed (added by script.js when the page is
+     actually opened) — if you print without ever having visited the
+     references page this session, that class was never added and these
+     sit at their default opacity: 0 resting state. Print doesn't care
+     about that on-screen reveal choreography at all, so force it here
+     regardless of whether .is-revealed happens to be present. */
+  #page-about .term-window__body > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 
   /* Swap the neon-glow monospace heading and light-on-dark body copy for
      a plain serif document register — this is the "un-terminal'd" part. */

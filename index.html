@@ -113,20 +113,33 @@
         <span class="console__ok">[ ok ]</span> session established — awaiting command
       </p>
 
-      <form id="console-form" class="console__form" autocomplete="off">
-        <label for="console-input" class="sr-only">Command input</label>
-        <span class="console__prompt-symbol" aria-hidden="true">&gt;</span>
-        <!-- Command input with stacked ghost autocompletion and dynamic caret -->
-        <span class="console__input-wrap">
-          <span id="console-ghost" class="console__ghost" aria-hidden="true"></span>
-          <span id="console-caret" class="console__caret" aria-hidden="true"></span>
-          <input id="console-input" class="console__input" type="text" autocomplete="off" autocapitalize="off"
-            spellcheck="false" placeholder="type a command..." />
-        </span>
-      </form>
+      <!--
+        #console-bar (form + feedback) is not permanently anchored here.
+        It starts in this spot in the markup, but script.js physically
+        relocates this exact element — same <input>, same ghost/caret/
+        tab-completion wiring, nothing rebuilt — into #top-bar-slot below
+        whenever a content page is open, then moves it back here (via
+        insertBefore against #console-bar-anchor, which just marks the
+        spot) once you return to the console. One command bar, reused
+        everywhere, rather than a second copy duplicated per screen.
+      -->
+      <span id="console-bar-anchor"></span>
+      <div id="console-bar" class="console-bar">
+        <form id="console-form" class="console__form" autocomplete="off">
+          <label for="console-input" class="sr-only">Command input</label>
+          <span class="console__prompt-symbol" aria-hidden="true">&gt;</span>
+          <!-- Command input with stacked ghost autocompletion and dynamic caret -->
+          <span class="console__input-wrap">
+            <span id="console-ghost" class="console__ghost" aria-hidden="true"></span>
+            <span id="console-caret" class="console__caret" aria-hidden="true"></span>
+            <input id="console-input" class="console__input" type="text" autocomplete="off" autocapitalize="off"
+              spellcheck="false" placeholder="type a command..." />
+          </span>
+        </form>
 
-      <!-- Feedback line for unrecognised commands -->
-      <p id="console-feedback" class="console__feedback" role="status" aria-live="polite"></p>
+        <!-- Feedback line for unrecognised commands / the "help" response -->
+        <p id="console-feedback" class="console__feedback" role="status" aria-live="polite"></p>
+      </div>
 
       <p class="console__hint">
         new here? type <span data-cmd="home">home</span> to begin, or <span data-cmd="help">help</span> to see
@@ -137,6 +150,12 @@
 
     <p id="console-counter" class="console__counter">commands entered: <span data-counter-value>0</span></p>
   </main>
+
+  <!-- Where #console-bar lives while any content page is open — fixed,
+       pinned to the top, so a command can be typed from anywhere without
+       first returning to the console. Empty (and so invisible/inert) at
+       rest; script.js is the only thing that ever puts something in it. -->
+  <div id="top-bar-slot" class="top-bar-slot"></div>
 
 
   <!-- Content Pages -->

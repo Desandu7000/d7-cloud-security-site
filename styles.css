@@ -453,6 +453,51 @@ button { font: inherit; color: inherit; }
   text-align: center;
 }
 
+/* --- The relocatable command bar ------------------------------------------
+   Default state: a normal flex item inside .console__inner, laid out
+   exactly as the form + feedback line used to be when they were direct
+   children of it (same gap, same width) — visually nothing changes here.
+
+   .console-bar--pinned (added by script.js whenever a content page is
+   open) is the other state: fixed to the top of the viewport instead, so
+   the same input/ghost/caret/feedback can be typed into from any page
+   without returning to the console. See the HTML comment above
+   #console-bar for why this is one relocated element rather than two. */
+.console-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  width: 100%;
+}
+
+.console-bar--pinned {
+  position: fixed;
+  /* PIN_TOP in script.js (the hero's pinned-thumbnail offset) and
+     .term-window__bar's sticky `top` are both deliberately kept clear of
+     this same ~64px header band — see the comments there. */
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 940;   /* above page content/hero (≤10), below the lightbox (970) */
+  width: min(480px, calc(100vw - 2rem));
+  gap: 0.35em;
+}
+/* Slightly smaller chrome when pinned — this is a persistent utility bar
+   here, not the centrepiece it is on the console screen. */
+.console-bar--pinned .console__form {
+  padding: 0.5em 0.8em;
+}
+.console-bar--pinned .console__prompt-symbol,
+.console-bar--pinned .console__input,
+.console-bar--pinned .console__ghost {
+  font-size: var(--fs-small);
+}
+.console-bar--pinned .console__feedback {
+  font-size: 0.7rem;
+  min-height: 1.1em;
+}
+
 .console__brand {
   margin: 0;
   font-family: var(--font-mono);
@@ -765,7 +810,12 @@ button { font: inherit; color: inherit; }
    a parent. */
 .term-window__bar {
   position: sticky;
-  top: 0;
+  /* Not 0 — the persistent pinned command bar (.console-bar--pinned) now
+     occupies roughly the top 72px of every content page, and this would
+     otherwise stick directly underneath/behind it. Matches PIN_TOP in
+     script.js, which reserves the same band for the hero's pinned
+     thumbnail for the same reason. */
+  top: 82px;
   z-index: 10;   /* above page content and the background canvas, below the fixed logo/sound-toggle (950) */
 
   display: flex;
@@ -1125,7 +1175,10 @@ button { font: inherit; color: inherit; }
   top: 0;
   left: 0;
   right: 0;
-  height: 150px;
+  /* Tall enough to cover both the pinned command bar's own band (~60px)
+     and the hero's pinned thumbnail below it (PIN_TOP + PIN_MAX_H in
+     script.js, currently 64 + 108 = 172px), with a little margin. */
+  height: 220px;
   opacity: 0;
   background: linear-gradient(to bottom,
               var(--bg-void) 45%,

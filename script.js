@@ -470,6 +470,8 @@
     feedback:  document.getElementById('console-feedback'),
     counter:   document.querySelector('[data-counter-value]'),
     soundBtn:  document.getElementById('sound-toggle'),
+    bar:       document.getElementById('console-bar'),
+    topSlot:   document.getElementById('top-bar-slot'),
     pages:     Array.prototype.slice.call(document.querySelectorAll('.screen--page'))
   };
 
@@ -479,7 +481,42 @@
 
   var activePage = null;   // the page <section> currently open, or null
   var commandCount = 0;    // every recognised command, including "back"
-  var pendingHelp = false; // "help" was invoked from a page; show it on arrival
+
+  /* #console-bar's original spot, remembered once up front so it can be
+     moved back exactly where it came from — see relocateBar() below. */
+  var barHome = {
+    parent: el.bar ? el.bar.parentNode : null,
+    next:   el.bar ? el.bar.nextSibling : null
+  };
+
+  /* Physically moves #console-bar — the actual form/ghost/caret/feedback
+     element, not a copy — between the console's own layout and the fixed
+     top slot used on content pages. Because it's the same DOM node, every
+     event listener and all the ghost/caret/tab-completion state already
+     wired to it keeps working with no extra setup after the move. */
+  function relocateBar(toTop) {
+    if (!el.bar) { return; }
+
+    if (toTop) {
+      if (el.bar.parentNode !== el.topSlot) { el.topSlot.appendChild(el.bar); }
+      el.bar.classList.add('console-bar--pinned');
+    } else {
+      if (el.bar.parentNode !== barHome.parent) {
+        barHome.parent.insertBefore(el.bar, barHome.next);
+      }
+      el.bar.classList.remove('console-bar--pinned');
+    }
+
+    /* .console-bar--pinned shrinks the input's font-size (see styles.css),
+       which the caret-tracking mirror doesn't know about on its own —
+       without this, the caret would keep measuring against the OLD font
+       metrics after a relocation and drift out of alignment. These are
+       defined further down but hoisted, so calling them here is safe. */
+    if (el.caret) {
+      syncCaretMirrorFont();
+      updateCaretPosition();
+    }
+  }
 
   /* Original full text of every [data-typewriter] element, captured once
      up front — before script.js ever clears any of them for typing —
@@ -796,7 +833,13 @@
      band or a thin sliver. */
   var PIN_MAX_H = 108;
   var PIN_MAX_W = 190;
-  var PIN_TOP   = 18;    /* px from the top of the viewport when pinned */
+  /* Clears the persistent pinned command bar (.console-bar--pinned in
+     styles.css), which now occupies roughly the same top band on every
+     content page — matches .term-window__bar's sticky `top` for the same
+     reason. The bar itself measures ~72px tall (12px top offset + ~60px
+     height); 82 leaves a clean ~10px gap rather than the two edges
+     touching or overlapping. */
+  var PIN_TOP   = 82;
 
   var heroes = [];
 
@@ -1053,6 +1096,12 @@
     page.classList.add('is-active');
     activePage = page;
 
+    /* Pin the command bar to the top for this page — see relocateBar()
+       and the HTML comment above #console-bar. Safe to call even when
+       already pinned (moving between two content pages): relocateBar()
+       no-ops the DOM move when the bar's already in the target slot. */
+    relocateBar(true);
+
     /* Reset the reveal, force a reflow so the browser "notices" the class
        is gone, then re-add it. Without the reflow the remove+add would be
        batched into a single style recalc and the transition would not
@@ -1167,6 +1216,11 @@
 
   function finishShowConsole() {
     el.console.classList.add('is-active');
+
+    /* Move the command bar back into its normal centred spot in the
+       console layout — the mirror image of showPage()'s relocateBar(true). */
+    relocateBar(false);
+
     el.input.value = '';
     updateGhost();
     updateCaretPosition();
@@ -1178,10 +1232,6 @@
     /* The sound toggle is relevant again now that the command line is
        back — un-hide it (a no-op if it was already visible). */
     if (el.soundBtn) { el.soundBtn.removeAttribute('hidden'); }
-
-    /* "help" was clicked from a page: now that we've arrived (and
-       clearFeedback above has run), it's safe to render the response. */
-    if (pendingHelp) { pendingHelp = false; showHelp(); }
 
     if (window.D7Backgrounds) { window.D7Backgrounds.stopAll(); }
   }
@@ -1243,17 +1293,10 @@
     }
 
     if (result === 'HELP') {
-      if (activePage || isLeaving) {
-        /* Reachable from a page now that Home carries a clickable "help"
-           word. The help line lives on the console, so go back there first
-           and flag it to be shown once the return transition has finished
-           (finishShowConsole clears the feedback line, so showing it here
-           would just be wiped). */
-        pendingHelp = true;
-        showConsole();
-      } else {
-        showHelp();
-      }
+      /* #console-feedback travels with #console-bar (see relocateBar()),
+         so this shows in the right place automatically — no navigation
+         needed even when triggered from a content page. */
+      showHelp();
       return;
     }
 
@@ -1262,12 +1305,10 @@
       return;
     }
 
-    /* Unrecognised input: on the console, hint at the valid commands. While
-       a page is open, an unrecognised command is just ignored (the user is
-       reading, not necessarily trying to navigate). */
-    if (!activePage) {
-      showFeedback('command not recognised — try: data breach / iam / malware / about');
-    }
+    /* Unrecognised input — the feedback line is now reachable from any
+       page (it travels with the bar, see relocateBar()), so this shows
+       regardless of whether a page is open. */
+    showFeedback('command not recognised — try: data breach / iam / malware / about');
   }
 
 

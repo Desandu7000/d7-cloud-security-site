@@ -580,21 +580,33 @@
 
   /* --------------------------------------------------------------------------
      01b. PAGE TEXT TYPEWRITER
-     The [data-typewriter] heading + paragraphs on the three prose pages are
-     typed in character-by-character, and, on the way out, erased the same
-     way in reverse. Silent on purpose — see the STAGE 0 comment above for
-     why this doesn't use window.D7Sound like the intro/console do. The
-     references page has no [data-typewriter] elements — its citation
-     entries contain real <em>/<a> markup a character typewriter would have
-     to tear apart, so it keeps the plain fade-stagger reveal defined in
-     styles.css instead; isTypedPage() below is what tells the two code
-     paths apart.
+     Each content page's body is a SEQUENCE of blocks, in DOM order, each
+     either:
+       - [data-typewriter]: a heading or paragraph, typed in character-by-
+         character and erased the same way in reverse.
+       - [data-reveal]: plain content a character typewriter can't sensibly
+         type into — the video card, a bullet-point summary list, or (on
+         the Summary page) the entire reference section, which contains
+         real <em>/<a> markup that typing would have to tear apart and
+         rebuild. These fade in/out as a whole block instead, via the
+         .is-typed-in class (styled in styles.css), added/removed at
+         exactly the right point in the sequence — which is the reason
+         this needs to be a single ordered walk rather than "type
+         everything, then reveal the extras" (an earlier version of this
+         only ever had ONE non-typed block, always last — the video — so
+         that shortcut worked; a bullet list or reference section can sit
+         in the MIDDLE of the sequence, and needs to wait for whatever
+         precedes it to actually finish typing, which takes a variable,
+         not-known-in-advance amount of time, before it appears).
+
+     Silent on purpose — see the STAGE 0 comment above for why this doesn't
+     use window.D7Sound like the intro/console do.
 
      Structurally this mirrors the intro's own abortable-sleep pattern
-     (Stage 1) closely — same shape, just applied to N sequential elements
-     instead of one title, and reused for both directions (typing in AND
-     erasing out) via one shared abort state, since the two never overlap
-     for a given page.
+     (Stage 1) closely — same shape, just walking N sequential blocks
+     instead of typing one title, and reused for both directions (typing
+     in AND erasing out) via one shared abort state, since the two never
+     overlap for a given page.
   -------------------------------------------------------------------------- */
 
   var TYPE_SPEED   = 9;    // ms/char, base (before jitter) — typing in
@@ -640,12 +652,25 @@
 
   function typeCheckpoint(token) { if (!isCurrent(token)) { throw TYPE_ABORT; } }
 
-  function getTypedElements(page) {
-    return Array.prototype.slice.call(page.querySelectorAll('[data-typewriter]'));
+  /* Every [data-typewriter] or [data-reveal] element inside the body, in
+     DOM order — the full sequence runPageTypeIn()/runPageEraseOut() walk.
+     querySelectorAll rather than direct-children-only deliberately: Home's
+     opening paragraph sits nested inside a wrapper div (alongside its
+     accompanying image, see .welcome-lead), not as a direct child of the
+     body, and still needs to be found. This stays safe for [data-reveal]
+     blocks that themselves contain ordinary markup — the Summary page's
+     reference section wraps a heading and several citation entries, none
+     of which carry either attribute themselves, so they're simply never
+     matched and the whole section is walked as the one block it's meant
+     to be. */
+  function getSequenceItems(page) {
+    var body = page.querySelector('.term-window__body');
+    if (!body) { return []; }
+    return Array.prototype.slice.call(body.querySelectorAll('[data-typewriter], [data-reveal]'));
   }
 
   function isTypedPage(page) {
-    return getTypedElements(page).length > 0;
+    return getSequenceItems(page).some(function (el) { return el.hasAttribute('data-typewriter'); });
   }
 
   /* Types `el`'s full text in from empty.
@@ -699,22 +724,26 @@
   }
 
   /* --- Type-in (the page's "intro") --------------------------------------
-     Fire-and-forget from showPage(): clears every typed element, waits for
-     the term-window's own fade-in to finish, then types each element in
-     turn. Reduced motion skips straight to the finished state. */
+     Fire-and-forget from showPage(): resets every sequenced block, waits
+     for the term-window's own fade-in to finish, then walks the sequence
+     in order — typing [data-typewriter] blocks character-by-character,
+     fading [data-reveal] blocks in as a whole once their turn comes.
+     Reduced motion skips straight to the finished state. */
   async function runPageTypeIn(page) {
-    var items = getTypedElements(page);
+    var items = getSequenceItems(page);
     if (!items.length) { return; }
 
     var token = beginSequence();
-    items.forEach(function (el) { el.textContent = ''; });
-
-    var video = page.querySelector('.term-window__video');
-    if (video) { video.classList.remove('is-typed-in'); }
+    items.forEach(function (el) {
+      if (el.hasAttribute('data-typewriter')) { el.textContent = ''; }
+      else { el.classList.remove('is-typed-in'); }
+    });
 
     if (prefersReducedMotion()) {
-      items.forEach(function (el) { el.textContent = TYPEWRITER_TEXT.get(el) || ''; });
-      if (video) { video.classList.add('is-typed-in'); }
+      items.forEach(function (el) {
+        if (el.hasAttribute('data-typewriter')) { el.textContent = TYPEWRITER_TEXT.get(el) || ''; }
+        else { el.classList.add('is-typed-in'); }
+      });
       return;
     }
 
@@ -726,12 +755,16 @@
       typeCheckpoint(token);
 
       for (var i = 0; i < items.length; i++) {
-        await typeElementText(items[i], TYPE_SPEED, token);
+        var el = items[i];
+        if (el.hasAttribute('data-typewriter')) {
+          await typeElementText(el, TYPE_SPEED, token);
+        } else {
+          el.classList.add('is-typed-in');
+        }
         typeCheckpoint(token);
         await typeSleep(140);
         typeCheckpoint(token);
       }
-      if (video) { video.classList.add('is-typed-in'); }
     } catch (e) {
       if (e !== TYPE_ABORT) { throw e; }
     } finally {
@@ -750,44 +783,42 @@
     beginSequence();
     if (typeState.wake) { typeState.wake(); }
 
-    getTypedElements(page).forEach(function (el) {
-      el.textContent = TYPEWRITER_TEXT.get(el) || '';
+    getSequenceItems(page).forEach(function (el) {
+      if (el.hasAttribute('data-typewriter')) { el.textContent = TYPEWRITER_TEXT.get(el) || ''; }
+      else { el.classList.add('is-typed-in'); }
     });
-
-    var video = page.querySelector('.term-window__video');
-    if (video) { video.classList.add('is-typed-in'); }
 
     var termWindow = page.querySelector('.term-window');
     if (termWindow) { termWindow.classList.remove('is-typing'); }
   }
 
   /* --- Erase-out (the page's "outro") -------------------------------------
-     Called from showConsole()'s outro handling. Erases in reverse order —
-     video card first, then last paragraph back up to the heading — so it
-     reads as "closing from the bottom", the mirror image of typing in. */
+     Called from showConsole()'s outro handling. Walks the sequence in
+     REVERSE — last block first, up to the heading — so it reads as
+     "closing from the bottom", the mirror image of typing in. */
   async function runPageEraseOut(page) {
-    var items = getTypedElements(page);
+    var items = getSequenceItems(page);
     if (!items.length) { return; }
 
     var token = beginSequence();
 
     if (prefersReducedMotion()) {
-      items.forEach(function (el) { el.textContent = ''; });
-      var videoRM = page.querySelector('.term-window__video');
-      if (videoRM) { videoRM.classList.remove('is-typed-in'); }
+      items.forEach(function (el) {
+        if (el.hasAttribute('data-typewriter')) { el.textContent = ''; }
+        else { el.classList.remove('is-typed-in'); }
+      });
       return;
     }
 
     try {
-      var video = page.querySelector('.term-window__video');
-      if (video) {
-        video.classList.remove('is-typed-in');
-        await typeSleep(160);
-        typeCheckpoint(token);
-      }
-
       for (var i = items.length - 1; i >= 0; i--) {
-        await eraseElementText(items[i], ERASE_SPEED, ERASE_CHUNK, token);
+        var el = items[i];
+        if (el.hasAttribute('data-typewriter')) {
+          await eraseElementText(el, ERASE_SPEED, ERASE_CHUNK, token);
+        } else {
+          el.classList.remove('is-typed-in');
+          await typeSleep(160);
+        }
         typeCheckpoint(token);
       }
     } catch (e) {
@@ -801,10 +832,10 @@
     beginSequence();
     if (typeState.wake) { typeState.wake(); }
 
-    getTypedElements(page).forEach(function (el) { el.textContent = ''; });
-
-    var video = page.querySelector('.term-window__video');
-    if (video) { video.classList.remove('is-typed-in'); }
+    getSequenceItems(page).forEach(function (el) {
+      if (el.hasAttribute('data-typewriter')) { el.textContent = ''; }
+      else { el.classList.remove('is-typed-in'); }
+    });
   }
 
 

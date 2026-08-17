@@ -875,61 +875,81 @@ button { font: inherit; color: inherit; }
 .term-window__body p:last-child { margin-bottom: 0; }
 
 /* --- Text intro / outro ---------------------------------------------------
-   Two different reveal mechanisms share this window, split by whether an
-   element carries [data-typewriter]:
+   Three reveal mechanisms share this window, split by what an element
+   carries:
 
-     - [data-typewriter] elements (the heading + body paragraphs on the
-       three prose pages) are typed and erased character-by-character by
-       script.js (Stage 2) directly via textContent — the empty-to-full
-       text IS the reveal, so these are excluded from the opacity/transform
-       treatment below entirely; they're always at full opacity.
+     - [data-typewriter] elements (headings + body paragraphs) are typed
+       and erased character-by-character by script.js (Stage 2) directly
+       via textContent — the empty-to-full text IS the reveal, so these
+       are excluded from the opacity/transform treatment below entirely;
+       they're always at full opacity.
 
-     - Everything else (the video block, and the reference list's entries
-       and heading on the "about" page, which contain real inline markup —
-       <em>/<a> — that a character typewriter would have to tear apart and
-       isn't worth the complexity for) keeps the original fade-up stagger,
-       triggered by the ancestor .is-revealed class, with the per-child
-       delay hand-written below since CSS can't multiply a step value by
-       the child index. Covers up to 12 items — more than the longest page
-       (the reference list) needs. The video block is the one exception
-       that needs a delay NOT tied to its ancestor (typing finishes at a
-       variable time) — script.js adds .is-typed-in to it directly instead;
-       see the override at the end of this block. */
-.term-window__body > *:not([data-typewriter]) {
+     - [data-reveal] elements (the video block; a page's bullet-point
+       summary list; the whole reference section on the Summary page) are
+       plain content — no character typewriter, since a <ul> or citation
+       markup (<em>/<a>) would have to be torn apart and rebuilt to type
+       into. But unlike the old approach (below), these need to fade in at
+       a SPECIFIC POINT in the typed sequence, not on a fixed delay from
+       page-open — a bullet list sitting between two typed paragraphs must
+       wait for the first paragraph to actually finish typing (which takes
+       a variable, unknowable-in-advance amount of time) before it
+       appears, not fade in on its own fixed timer while typing is still
+       running above it. So script.js (Stage 2, runPageTypeIn) drives
+       these directly with the same .is-typed-in class the video always
+       used — the rule for that is a few lines down.
+
+     - Everything else (only the reference list's individual entries used
+       to fall here) keeps the ORIGINAL fade-up stagger, triggered by the
+       ancestor .is-revealed class with a hand-written per-child delay,
+       since CSS can't multiply a step value by the child index. Nothing
+       currently uses this any more — every page's non-typed content is
+       now wrapped in a single [data-reveal] block instead of left as
+       individual stagger items — but the rule stays as a documented
+       fallback rather than being deleted outright, since it costs nothing
+       inert and a future page could still reasonably want individually-
+       staggered non-typed items. Covers up to 12 items. */
+.term-window__body > *:not([data-typewriter]):not([data-reveal]) {
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 480ms var(--ease-out), transform 480ms var(--ease-out);
 }
-.screen--page.is-revealed .term-window__body > *:not([data-typewriter]) { opacity: 1; transform: none; }
+.screen--page.is-revealed .term-window__body > *:not([data-typewriter]):not([data-reveal]) { opacity: 1; transform: none; }
 
-.term-window__body > *:not([data-typewriter]):nth-child(1)  { transition-delay: 480ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(2)  { transition-delay: 535ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(3)  { transition-delay: 590ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(4)  { transition-delay: 645ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(5)  { transition-delay: 700ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(6)  { transition-delay: 755ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(7)  { transition-delay: 810ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(8)  { transition-delay: 865ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(9)  { transition-delay: 920ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(10) { transition-delay: 975ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(11) { transition-delay: 1030ms; }
-.term-window__body > *:not([data-typewriter]):nth-child(12) { transition-delay: 1085ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(1)  { transition-delay: 480ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(2)  { transition-delay: 535ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(3)  { transition-delay: 590ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(4)  { transition-delay: 645ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(5)  { transition-delay: 700ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(6)  { transition-delay: 755ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(7)  { transition-delay: 810ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(8)  { transition-delay: 865ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(9)  { transition-delay: 920ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(10) { transition-delay: 975ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(11) { transition-delay: 1030ms; }
+.term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(12) { transition-delay: 1085ms; }
 
-/* The video block's own reveal trigger, set by script.js once typing
-   finishes — placed after the nth-child rules above so it wins the
-   cascade on the (otherwise tied) specificity. */
-.term-window__video.is-typed-in {
+/* [data-reveal]'s resting state and its script.js-driven trigger. Not tied
+   to the ancestor .is-revealed class or to nth-child position at all —
+   script.js adds/removes .is-typed-in at exactly the right moment in the
+   typed sequence, in either direction (typing in or erasing out). */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 480ms var(--ease-out), transform 480ms var(--ease-out);
+}
+[data-reveal].is-typed-in {
   opacity: 1;
   transform: none;
-  transition-delay: 0ms;
 }
 
-/* Outro (non-typed elements only — typed ones are erased by script.js
-   instead, see above): drops out together, quickly and with no stagger,
-   right before the screen itself cross-fades to the console. */
+/* Outro (non-typed, non-reveal elements only — typed ones are erased by
+   script.js, [data-reveal] ones are hidden by script.js removing
+   .is-typed-in, both in their own proper sequence position; see above):
+   drops out together, quickly and with no stagger, right before the
+   screen itself cross-fades to the console. */
 .screen--page.is-leaving .page__access-log,
 .screen--page.is-leaving .term-window,
-.screen--page.is-leaving .term-window__body > *:not([data-typewriter]) {
+.screen--page.is-leaving .term-window__body > *:not([data-typewriter]):not([data-reveal]) {
   transition: opacity 240ms ease-in, transform 240ms ease-in !important;
   transition-delay: 0ms !important;
   opacity: 0 !important;
@@ -946,6 +966,18 @@ button { font: inherit; color: inherit; }
   padding-left: 2em;
   text-indent: -2em;
 }
+
+/* Wraps the Summary page's "References" heading + citation list as ONE
+   [data-reveal] block (see the Stage 2 comment in script.js for why) — the
+   top border/padding is what gives it visual separation from the summary
+   prose typed in just above it, since it's no longer a fresh term-window
+   of its own the way the standalone references page used to be. */
+.ref-section {
+  padding-top: var(--gap-md);
+  margin-top: var(--gap-sm);
+  border-top: 1px solid var(--line);
+}
+.ref-section .term-window__heading { margin-top: 0; }
 
 /* Video embed: fixed 16:9 aspect ratio using the padding-top trick, so it
    never distorts on resize and needs no JS to size itself. */
@@ -1317,6 +1349,34 @@ button { font: inherit; color: inherit; }
 .log-list span[data-cmd]:focus-visible {
   color: var(--accent);
   border-bottom-color: currentColor;
+}
+
+/* Plain bullet-point summary lists on the three aspect pages — same
+   terminal-bullet visual language as .log-list above (still reads as part
+   of the same system), but plain text: nothing here is a command, so
+   there's no amber/clickable treatment on the list items themselves. */
+.aspect-list {
+  margin: 0 0 var(--gap-md);
+  padding: 0;
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.aspect-list li {
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  padding-left: 1.1em;
+  position: relative;
+}
+.aspect-list li::before {
+  content: '\203A';   /* › */
+  position: absolute;
+  left: 0;
+  color: var(--accent);
 }
 
 .term-window__aside {

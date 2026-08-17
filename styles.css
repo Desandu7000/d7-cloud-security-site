@@ -713,12 +713,14 @@ button { font: inherit; color: inherit; }
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--bg-panel);
-  overflow: hidden;
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
 
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 480ms 420ms var(--ease-out), transform 480ms 420ms var(--ease-out);
+
+  /* NOTE: no `overflow: hidden` here (deliberately) — see .term-window__bar
+     below for why, and .term-window__body for where the clipping moved. */
 }
 
 /* Small discoverability hint while script.js (Stage 2) is mid-typewriter —
@@ -747,13 +749,32 @@ button { font: inherit; color: inherit; }
 .screen--page.is-revealed .page__access-line { opacity: 1; transform: none; }
 .screen--page.is-revealed .term-window       { opacity: 1; transform: none; }
 
+/* Sticky rather than static: on long pages (the aspect pages especially,
+   with their bullet summaries) it stays visible — "which file am I
+   reading" shouldn't require scrolling back up to check.
+
+   This is why .term-window above has no `overflow: hidden`: that property
+   formally makes an element a scroll container regardless of whether it
+   actually has anything to scroll, and position: sticky resolves against
+   the *nearest* scroll container — so a sticky child of an overflow:hidden
+   parent sticks relative to that (permanently zero-range) parent instead
+   of the real one (.screen--page), and never visually detaches at all.
+   The corner-radius clipping that overflow: hidden used to provide moved
+   to .term-window__body below, and the bar gets its own matching top
+   corners here instead, since it's no longer being clipped into shape by
+   a parent. */
 .term-window__bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;   /* above page content and the background canvas, below the fixed logo/sound-toggle (950) */
+
   display: flex;
   align-items: center;
   gap: 0.5em;
   padding: 0.7em 0.9em;
   background: var(--bg-chrome);
   border-bottom: 1px solid var(--line);
+  border-radius: 8px 8px 0 0;
 }
 
 .term-dot {
@@ -776,6 +797,8 @@ button { font: inherit; color: inherit; }
 
 .term-window__body {
   padding: clamp(1.25rem, 4vw, 2.25rem);
+  overflow: hidden;              /* clips children (e.g. the video block) to the rounded corners */
+  border-radius: 0 0 8px 8px;    /* matches .term-window's own bottom corners, now that it can't clip for us */
 }
 
 .term-window__heading {
@@ -1117,12 +1140,10 @@ button { font: inherit; color: inherit; }
   border: 0;
   background: none;
   pointer-events: auto;   /* the one part of .hero that is clickable */
-  cursor: zoom-in;        /* expanded state overrides this below */
+  cursor: zoom-in;        /* clicking always opens the full-clarity lightbox, pinned or not */
   transform-origin: center center;
   will-change: transform;
 }
-/* Expanded (top of page): clicking does nothing useful, so don't imply it. */
-.hero.is-expanded .hero__frame { cursor: default; }
 
 .hero__img {
   display: block;
@@ -1326,6 +1347,80 @@ button { font: inherit; color: inherit; }
 @keyframes logo-breathe {
   0%, 100% { box-shadow: 0 0 6px 0 rgba(70, 230, 208, 0.18); }
   50%      { box-shadow: 0 0 20px 4px rgba(70, 230, 208, 0.5); }
+}
+
+
+/* ---------------------------------------------------------------------------
+   07d. HERO IMAGE LIGHTBOX
+   Full-screen and vertically scrollable rather than shrunk to fit the
+   viewport — the whole point is reading a tall (portrait) image at its
+   real clarity, which "fit it inside 90vh" would work directly against.
+   script.js toggles .is-open and swaps the <img> src/alt per click.
+--------------------------------------------------------------------------- */
+.hero-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 970;   /* above the logo/sound-toggle (950), below nothing — this is the top layer */
+
+  background: rgba(5, 7, 13, 0.96);
+  backdrop-filter: blur(6px);
+}
+.hero-lightbox.is-open { display: block; }
+
+.hero-lightbox__scroll {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  justify-content: center;
+  /* flex's default align-items is `stretch`, which would silently stretch
+     the image to fill this container's height — exactly the opposite of
+     what a scrollable viewer needs (the image should size by its own
+     aspect ratio, and the container should scroll to fit it, not the
+     other way around). */
+  align-items: flex-start;
+  /* Generous top/bottom padding so the image never butts against the
+     viewport edge, and there's always room to scroll it fully into view. */
+  padding: clamp(3.5rem, 8vh, 5rem) clamp(1rem, 4vw, 3rem) clamp(2rem, 6vh, 4rem);
+}
+
+.hero-lightbox__img {
+  width: min(760px, 92vw);
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid var(--line-accent);
+  box-shadow: 0 0 70px rgba(70, 230, 208, 0.14);
+}
+
+.hero-lightbox__close {
+  position: fixed;
+  top: clamp(0.9rem, 3vw, 1.5rem);
+  right: clamp(0.9rem, 3vw, 1.5rem);
+  z-index: 1;
+
+  width: 2.4rem;
+  height: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-accent);
+  border-radius: 50%;
+  background: rgba(13, 18, 32, 0.75);
+  color: var(--text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 180ms, border-color 180ms, background-color 180ms;
+}
+.hero-lightbox__close:hover,
+.hero-lightbox__close:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(70, 230, 208, 0.12);
 }
 
 

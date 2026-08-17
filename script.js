@@ -859,8 +859,6 @@
     /* Prompt clears early — it's stale advice the moment scrolling starts. */
     if (hero.prompt) { hero.prompt.style.opacity = (1 - clamp01(p * 2.6)).toFixed(3); }
 
-    hero.el.classList.toggle('is-expanded', p < 0.02);
-
     /* Content trails the image: it only starts fading up once the image is
        meaningfully out of the way, and finishes before the image is fully
        pinned, so the two never look like they're fighting for attention. */
@@ -893,20 +891,63 @@
      handle the same preference. */
   function heroIsStatic() { return prefersReducedMotion(); }
 
+  /* --- Lightbox --------------------------------------------------------
+     Clicking the hero image — pinned or full-size, doesn't matter — opens
+     it full-screen and scrollable. This exists because the shrink effect
+     alone isn't enough for a tall infographic: even at "full size" the
+     hero is capped to 74vh (see .hero__img), which for a portrait image
+     forces the width down with it and leaves the text inside genuinely too
+     small to read. The lightbox shows the same image unconstrained by
+     viewport height, so reading it is a scroll instead of a squint. */
+  var lightbox       = document.getElementById('hero-lightbox');
+  var lightboxImg    = lightbox && lightbox.querySelector('[data-lightbox-img]');
+  var lightboxScroll = lightbox && lightbox.querySelector('[data-lightbox-scroll]');
+  var lightboxClose  = lightbox && lightbox.querySelector('[data-lightbox-close]');
+  var lightboxOpener = null;   /* the hero.frame that opened it, for focus return on close */
+
+  function isLightboxOpen() {
+    return !!lightbox && lightbox.classList.contains('is-open');
+  }
+
+  function openLightbox(hero) {
+    if (!lightbox || !lightboxImg) { return; }
+    lightboxImg.src = hero.img.currentSrc || hero.img.src;
+    lightboxImg.alt = hero.img.alt;
+    if (lightboxScroll) { lightboxScroll.scrollTop = 0; }
+    lightbox.classList.add('is-open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    lightboxOpener = hero.frame;
+  }
+
+  function closeLightbox() {
+    if (!lightbox) { return; }
+    lightbox.classList.remove('is-open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    /* Return focus to whatever opened it, for keyboard/screen-reader users
+       — otherwise focus is left on a now-hidden close button. */
+    if (lightboxOpener) { lightboxOpener.focus({ preventScroll: true }); }
+    lightboxOpener = null;
+  }
+
+  if (lightboxClose) { lightboxClose.addEventListener('click', closeLightbox); }
+
+  /* Clicking the backdrop (anywhere in the scroll area that isn't the
+     image itself) closes it too — the image is the only other direct
+     child, so target === lightboxScroll reliably means "missed it". */
+  if (lightboxScroll) {
+    lightboxScroll.addEventListener('click', function (event) {
+      if (event.target === lightboxScroll) { closeLightbox(); }
+    });
+  }
+
   heroes.forEach(function (hero) {
     hero.section.addEventListener('scroll', function () {
       if (heroIsStatic()) { return; }
       syncHero(hero);
     }, { passive: true });
 
-    /* Clicking the pinned thumbnail returns to the top, which runs the
-       shrink transform backwards and re-expands the image — so the user
-       never has to scroll back up by hand to see it full size again. */
     if (hero.frame) {
-      hero.frame.addEventListener('click', function () {
-        if (heroIsStatic() || hero.progress < 0.02) { return; }
-        hero.section.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+      hero.frame.addEventListener('click', function () { openLightbox(hero); });
     }
   });
 
@@ -1425,9 +1466,15 @@
      while the outro is already running skips straight through it —
      showConsole() itself handles that branch (isLeaving check). Checking
      isLeaving here too matters because activePage is nulled the instant
-     an outro starts, so activePage alone would miss that second press. */
+     an outro starts, so activePage alone would miss that second press.
+
+     The lightbox gets first refusal on Esc: it's a modal layered on top of
+     everything else, so Esc should close *it* first, not also start
+     leaving the page underneath in the same keypress. */
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && (activePage || isLeaving)) { showConsole(); }
+    if (event.key !== 'Escape') { return; }
+    if (isLightboxOpen()) { closeLightbox(); return; }
+    if (activePage || isLeaving) { showConsole(); }
   });
 
 })();

@@ -59,6 +59,22 @@
     <span data-sound-label>sound off</span>
   </button>
 
+  <!--
+    Hero image lightbox. One shared instance reused by every hero page —
+    script.js points its <img> at whichever image was clicked. Full-screen,
+    vertically scrollable (rather than shrunk-to-fit), since the point of
+    it is reading a tall image at its actual clarity — shrinking a portrait
+    infographic down to fit a viewport height defeats that.
+  -->
+  <div id="hero-lightbox" class="hero-lightbox" aria-hidden="true">
+    <button type="button" class="hero-lightbox__close" data-lightbox-close aria-label="Close image view">
+      &times;
+    </button>
+    <div class="hero-lightbox__scroll" data-lightbox-scroll>
+      <img class="hero-lightbox__img" data-lightbox-img src="" alt="" />
+    </div>
+  </div>
+
 
   <!-- Screen 1: Intro -->
   <section id="intro" class="screen screen--intro is-active" aria-label="Introduction">

@@ -479,6 +479,7 @@
 
   var activePage = null;   // the page <section> currently open, or null
   var commandCount = 0;    // every recognised command, including "back"
+  var pendingHelp = false; // "help" was invoked from a page; show it on arrival
 
   /* Original full text of every [data-typewriter] element, captured once
      up front — before script.js ever clears any of them for typing —
@@ -499,13 +500,17 @@
   -------------------------------------------------------------------------- */
 
   var ROUTES = {
+    home:       ['home', 'start', 'welcome', 'index'],
     databreach: ['data breach', 'databreach', 'breach'],
     iam:        ['iam', 'identity and access management', 'identity access management'],
     malware:    ['malware', 'ransomware', 'malware and ransomware'],
-    about:      ['about', 'references', 'refs', 'reference']
+    about:      ['about', 'references', 'refs', 'reference', 'summary']
   };
 
-  var BACK_WORDS = ['back', 'console', 'home', 'exit', 'menu'];
+  /* NB: 'home' is deliberately NOT here — it used to be a synonym for
+     "return to console", but it now routes to the actual Home page (see
+     ROUTES above), and resolveCommand() checks this list first. */
+  var BACK_WORDS = ['back', 'console', 'exit', 'menu'];
   var HELP_WORDS = ['help', '?', 'commands'];
 
   /* The CSS text-outro transition collapses to ~0ms under reduced motion
@@ -767,6 +772,202 @@
 
 
   /* --------------------------------------------------------------------------
+     01d. SCROLL-DRIVEN HERO IMAGE
+     Pages carrying a [data-hero] block open with their image at full size,
+     then shrink it into a small thumbnail pinned to the top of the screen
+     as the user scrolls, revealing the written content underneath.
+
+     The whole effect is one number: `p`, the scroll progress from 0 (image
+     full size, content hidden) to 1 (image pinned small, content readable).
+     Everything else — the image's transform, the backdrop bar's opacity,
+     the content's fade — is derived from `p`, which keeps the forward and
+     reverse directions automatically symmetrical: scrolling back up runs
+     the identical maths in reverse, no separate "undo" path to keep in
+     sync.
+
+     Only `transform` and `opacity` are ever written (see the CSS in
+     styles.css section 07c for why), so no frame of this triggers layout.
+  -------------------------------------------------------------------------- */
+
+  /* Pinned thumbnail size caps. Both are needed because the images differ
+     in orientation: the landscape aspect-page images hit the width cap
+     first, the portrait infographic hits the height cap first, and using
+     only one of the two would leave the other orientation either a wide
+     band or a thin sliver. */
+  var PIN_MAX_H = 108;
+  var PIN_MAX_W = 190;
+  var PIN_TOP   = 18;    /* px from the top of the viewport when pinned */
+
+  var heroes = [];
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-hero]')).forEach(function (heroEl) {
+    var section = heroEl.closest('.screen--page');
+    if (!section) { return; }
+    heroes.push({
+      section: section,
+      el:      heroEl,
+      frame:   heroEl.querySelector('[data-hero-frame]'),
+      img:     heroEl.querySelector('[data-hero-img]'),
+      bar:     heroEl.querySelector('.hero__bar'),
+      prompt:  heroEl.querySelector('[data-hero-prompt]'),
+      spacer:  section.querySelector('[data-hero-spacer]'),
+      inner:   section.querySelector('.page__inner'),
+      typed:   false,   /* has this visit already triggered the typewriter? */
+      progress: 0
+    });
+  });
+
+  function heroFor(page) {
+    for (var i = 0; i < heroes.length; i++) {
+      if (heroes[i].section === page) { return heroes[i]; }
+    }
+    return null;
+  }
+
+  function clamp01(n) { return n < 0 ? 0 : (n > 1 ? 1 : n); }
+
+  /* Smoothstep — eases both ends so the image doesn't jerk into motion the
+     instant the wheel moves, nor slam to a stop when it lands pinned. */
+  function smoothstep(t) { return t * t * (3 - 2 * t); }
+
+  function applyHero(hero, p) {
+    var img = hero.img;
+    /* offsetWidth/Height are the *untransformed* layout size — exactly what
+       we need, since the transform below is expressed relative to it. */
+    var w = img.offsetWidth;
+    var h = img.offsetHeight;
+    if (!w || !h) { return; }   /* image not laid out yet (e.g. still loading) */
+
+    hero.progress = p;
+    var e = smoothstep(p);
+
+    /* Shrink to whichever cap binds first, so tall portrait images and wide
+       landscape ones both end up a sensible thumbnail. */
+    var pinScale = Math.min(PIN_MAX_H / h, PIN_MAX_W / w);
+    var scale = 1 + (pinScale - 1) * e;
+
+    /* The image sits dead-centre of the viewport at rest (its .hero parent
+       is a fixed, flex-centred, inset:0 box), so the travel is simply the
+       gap between the viewport's centre line and the pinned centre line. */
+    var pinnedCentreY = PIN_TOP + (h * pinScale) / 2;
+    var dy = (pinnedCentreY - window.innerHeight / 2) * e;
+
+    hero.frame.style.transform =
+      'translate3d(0, ' + dy.toFixed(2) + 'px, 0) scale(' + scale.toFixed(4) + ')';
+
+    if (hero.bar) { hero.bar.style.opacity = e.toFixed(3); }
+    /* Prompt clears early — it's stale advice the moment scrolling starts. */
+    if (hero.prompt) { hero.prompt.style.opacity = (1 - clamp01(p * 2.6)).toFixed(3); }
+
+    hero.el.classList.toggle('is-expanded', p < 0.02);
+
+    /* Content trails the image: it only starts fading up once the image is
+       meaningfully out of the way, and finishes before the image is fully
+       pinned, so the two never look like they're fighting for attention. */
+    var cp = clamp01((p - 0.22) / 0.45);
+    hero.inner.style.opacity = cp.toFixed(3);
+    hero.inner.style.transform = 'translate3d(0, ' + ((1 - cp) * 18).toFixed(2) + 'px, 0)';
+    /* Invisible content shouldn't be clickable. */
+    hero.inner.style.pointerEvents = cp < 0.1 ? 'none' : 'auto';
+
+    /* Start typing once the text is actually on its way in — not on page
+       open, which would have it finish unseen behind the full-size image. */
+    if (!hero.typed && p > 0.4) {
+      hero.typed = true;
+      runPageTypeIn(hero.section);
+    }
+  }
+
+  function heroScrollRange(hero) {
+    /* Slightly less than the spacer's full height, so the image finishes
+       pinning a touch before the spacer has scrolled entirely past. */
+    return Math.max(1, hero.spacer.offsetHeight * 0.78);
+  }
+
+  function syncHero(hero) {
+    applyHero(hero, clamp01(hero.section.scrollTop / heroScrollRange(hero)));
+  }
+
+  /* Reduced motion: no scroll choreography at all — open straight into the
+     pinned/readable end state, matching how the intro and the canvases
+     handle the same preference. */
+  function heroIsStatic() { return prefersReducedMotion(); }
+
+  heroes.forEach(function (hero) {
+    hero.section.addEventListener('scroll', function () {
+      if (heroIsStatic()) { return; }
+      syncHero(hero);
+    }, { passive: true });
+
+    /* Clicking the pinned thumbnail returns to the top, which runs the
+       shrink transform backwards and re-expands the image — so the user
+       never has to scroll back up by hand to see it full size again. */
+    if (hero.frame) {
+      hero.frame.addEventListener('click', function () {
+        if (heroIsStatic() || hero.progress < 0.02) { return; }
+        hero.section.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  });
+
+  /* The pinned geometry is derived from the image's laid-out size and the
+     viewport height, so both a resize and a late-arriving image need a
+     recompute. */
+  window.addEventListener('resize', function () {
+    heroes.forEach(function (hero) {
+      if (heroIsStatic()) { applyHero(hero, 1); } else { syncHero(hero); }
+    });
+  });
+
+  heroes.forEach(function (hero) {
+    if (hero.img && !hero.img.complete) {
+      hero.img.addEventListener('load', function () {
+        if (heroIsStatic()) { applyHero(hero, 1); } else { syncHero(hero); }
+      });
+    }
+  });
+
+  /* Called by showPage() — puts a hero page back into its opening state. */
+  function resetHero(hero) {
+    hero.typed = false;
+
+    if (heroIsStatic()) {
+      hero.el.classList.add('is-static');
+      applyHero(hero, 1);
+      hero.typed = true;
+      runPageTypeIn(hero.section);
+      return;
+    }
+
+    hero.el.classList.remove('is-static');
+
+    /* Force the scroll container back to the top. showPage() already does
+       this, but it doesn't reliably stick: the browser restores a scroll
+       container's previous offset itself, and for a container that was
+       visibility:hidden until a moment ago that restore can land *after*
+       showPage has run — which opened the page already scrolled, so the
+       hero appeared pre-shrunk instead of full size. Re-asserting here,
+       and again on the next frame, wins against that late restore.
+       (history.scrollRestoration is also set to 'manual' at the bottom of
+       this module, which stops it happening on a reload in the first
+       place; this covers the in-session navigations.) */
+    hero.section.scrollTop = 0;
+    applyHero(hero, 0);
+
+    requestAnimationFrame(function () {
+      if (hero.section.scrollTop !== 0) { hero.section.scrollTop = 0; }
+      applyHero(hero, clamp01(hero.section.scrollTop / heroScrollRange(hero)));
+    });
+  }
+
+  /* This site is a single document whose "pages" are shown by toggling
+     classes, so there is never a meaningful scroll offset worth restoring —
+     and letting the browser restore one actively breaks the hero's opening
+     state (see resetHero above). */
+  if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
+
+  /* --------------------------------------------------------------------------
      02. SCREEN SWITCHING
   -------------------------------------------------------------------------- */
 
@@ -781,6 +982,33 @@
     if (!page) { return; }
 
     el.console.classList.remove('is-active');
+
+    /* Retire whichever page is currently open before opening the new one.
+       This used to be impossible — every page was entered from the console,
+       so there was never another page to close — but the Home page links
+       straight to the three log pages, which makes page-to-page navigation
+       reachable for the first time. Without this both pages end up carrying
+       .is-active and render stacked on top of each other.
+
+       skipPageTypeIn() is what actually matters here beyond the classes: it
+       bumps the typewriter's generation token, so the outgoing page's
+       in-flight typing can't keep writing into the DOM alongside the
+       incoming page's. */
+    if (activePage && activePage !== page) {
+      skipPageTypeIn(activePage);
+      activePage.classList.remove('is-active', 'is-leaving', 'is-revealed');
+    }
+
+    /* Likewise if a close animation is mid-flight: finish it off rather
+       than leaving that page half-dismissed behind the new one. */
+    if (isLeaving && pageBeingClosed && pageBeingClosed !== page) {
+      clearTimeout(cssOutroTimer);
+      cssOutroTimer = null;
+      pageBeingClosed.classList.remove('is-active', 'is-leaving', 'is-revealed');
+      pageBeingClosed = null;
+      isLeaving = false;
+    }
+
     page.classList.add('is-active');
     activePage = page;
 
@@ -812,8 +1040,16 @@
 
     /* The page's text "intro" — fire-and-forget; runPageTypeIn() is a no-op
        on the references page (isTypedPage() is false there), which keeps
-       its existing CSS fade-stagger untouched. */
-    runPageTypeIn(page);
+       its existing CSS fade-stagger untouched.
+
+       Hero pages are the exception: their text is still hidden behind a
+       full-size image at this point, so typing now would run the whole
+       animation unseen. resetHero() puts the hero back to its opening
+       state and hands the typewriter off to the scroll handler, which
+       fires it once the text is actually coming into view. */
+    var hero = heroFor(page);
+    if (hero) { resetHero(hero); }
+    else { runPageTypeIn(page); }
   }
 
   var OUTRO_MS = 260;      /* CSS-only outro duration (the references page) */
@@ -902,6 +1138,10 @@
        back — un-hide it (a no-op if it was already visible). */
     if (el.soundBtn) { el.soundBtn.removeAttribute('hidden'); }
 
+    /* "help" was clicked from a page: now that we've arrived (and
+       clearFeedback above has run), it's safe to render the response. */
+    if (pendingHelp) { pendingHelp = false; showHelp(); }
+
     if (window.D7Backgrounds) { window.D7Backgrounds.stopAll(); }
   }
 
@@ -934,6 +1174,7 @@
   function showHelp() {
     el.feedback.innerHTML =
       'here’s what you can open: ' +
+      '<span data-cmd="home">home</span> · ' +
       '<span data-cmd="data breach">data breach</span> · ' +
       '<span data-cmd="iam">iam</span> · ' +
       '<span data-cmd="malware">malware</span> · ' +
@@ -961,9 +1202,17 @@
     }
 
     if (result === 'HELP') {
-      /* Console-only — the command line itself is hidden on content pages,
-         so this is never reachable from there anyway. */
-      if (!activePage) { showHelp(); }
+      if (activePage || isLeaving) {
+        /* Reachable from a page now that Home carries a clickable "help"
+           word. The help line lives on the console, so go back there first
+           and flag it to be shown once the return transition has finished
+           (finishShowConsole clears the feedback line, so showing it here
+           would just be wiped). */
+        pendingHelp = true;
+        showConsole();
+      } else {
+        showHelp();
+      }
       return;
     }
 
@@ -1005,7 +1254,7 @@
      el.ghost (see the HTML/CSS) previews what Tab would do, before you
      press it — only shown when there's exactly one match, since a
      longest-common-prefix result isn't really "the" suggestion. */
-  var TAB_COMPLETIONS = ['data breach', 'iam', 'malware', 'about', 'back', 'help'];
+  var TAB_COMPLETIONS = ['home', 'data breach', 'iam', 'malware', 'about', 'back', 'help'];
 
   function getCompletionMatches(value) {
     return TAB_COMPLETIONS.filter(function (word) { return word.indexOf(value) === 0; });

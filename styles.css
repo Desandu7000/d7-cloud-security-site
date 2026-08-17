@@ -1066,6 +1066,204 @@ button { font: inherit; color: inherit; }
 
 
 /* ---------------------------------------------------------------------------
+   07c. SCROLL-DRIVEN HERO IMAGE
+   The hero starts as a full-size image filling the viewport, then shrinks
+   into a small thumbnail pinned to the top of the screen as the page is
+   scrolled, revealing the written content beneath it.
+
+   Mechanically: .hero is position:fixed (the section scrolls *underneath*
+   it), so going from "full size, centred" to "small, pinned at top" is a
+   single transform on .hero__frame — no width/height/top animation, so no
+   layout reflow, and the browser can keep the whole thing on the GPU.
+   script.js measures the image and computes that transform from scroll
+   progress; everything here is just the resting state it interpolates
+   between.
+--------------------------------------------------------------------------- */
+.hero {
+  position: fixed;
+  inset: 0;
+  z-index: 5;   /* above .page__inner (1) and .page__bg (0), below the logo (950) */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Clicks pass straight through to the content underneath; only the image
+     itself opts back in (below), so the hero never blocks the page. */
+  pointer-events: none;
+}
+
+/* The bar the shrunk thumbnail sits on once pinned. Without it, content
+   scrolling up would slide visibly behind the floating thumbnail; this
+   masks it, so the pinned state reads as a proper header strip. Faded in
+   by script.js in step with the shrink. */
+.hero__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  opacity: 0;
+  background: linear-gradient(to bottom,
+              var(--bg-void) 45%,
+              rgba(5, 7, 13, 0.92) 70%,
+              rgba(5, 7, 13, 0));
+}
+
+.hero__frame {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: auto;   /* the one part of .hero that is clickable */
+  cursor: zoom-in;        /* expanded state overrides this below */
+  transform-origin: center center;
+  will-change: transform;
+}
+/* Expanded (top of page): clicking does nothing useful, so don't imply it. */
+.hero.is-expanded .hero__frame { cursor: default; }
+
+.hero__img {
+  display: block;
+  max-width: min(880px, 88vw);
+  max-height: 74vh;
+  border-radius: 8px;
+  border: 1px solid var(--line-accent);
+  box-shadow:
+    0 24px 70px -24px rgba(0, 0, 0, 0.85),
+    0 0 42px rgba(70, 230, 208, 0.10);
+}
+
+.hero__prompt {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.25rem, 4vh, 2.75rem);
+  transform: translateX(-50%);
+  margin: 0;
+  white-space: nowrap;
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.2em;
+  text-transform: lowercase;
+  color: var(--text-muted);
+}
+.hero__prompt-arrow {
+  display: inline-block;
+  margin-left: 0.3em;
+  color: var(--accent);
+  animation: hero-bob 1.8s ease-in-out infinite;
+}
+@keyframes hero-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(5px); }
+}
+
+/* Supplies the scroll distance the shrink animation plays out over. It's
+   an empty block in normal flow — the hero itself is fixed and takes up no
+   flow space, so without this there'd be nothing to scroll. */
+.hero__spacer {
+  flex: none;
+  height: 94vh;
+}
+
+/* prefers-reduced-motion: script.js adds this and jumps straight to the
+   pinned state, so the spacer only needs to clear the pinned thumbnail
+   rather than provide a scroll runway. */
+.hero.is-static ~ .page__inner .hero__spacer { height: 120px; }
+.hero.is-static .hero__prompt { display: none; }
+
+
+/* --- Home page: welcome block ------------------------------------------- */
+
+/* The small static topic image beside the opening paragraph. Grid rather
+   than float so the text column can't wrap raggedly around it, and it
+   collapses to a single column when there isn't room. */
+.welcome-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: var(--gap-md);
+  align-items: start;
+  margin-bottom: var(--gap-md);
+}
+@media (max-width: 900px) {
+  .welcome-lead { grid-template-columns: 1fr; }
+}
+
+.welcome-lead__img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--line-accent);
+  box-shadow: 0 0 26px rgba(70, 230, 208, 0.12);
+}
+
+.welcome-lead__text p:last-child { margin-bottom: 0; }
+
+/* A line rendered as terminal output rather than prose. */
+.term-window__code {
+  font-family: var(--font-mono) !important;
+  color: var(--accent) !important;
+  letter-spacing: 0.04em;
+}
+
+/* The three "available logs", each one a clickable command. */
+.log-list {
+  margin: 0 0 var(--gap-md);
+  padding: 0;
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+}
+.log-list li {
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  padding-left: 1.1em;
+  position: relative;
+}
+/* Terminal-style bullet, in place of the default disc. */
+.log-list li::before {
+  content: '\203A';   /* › */
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+.log-list span[data-cmd] {
+  font-family: var(--font-mono);
+  color: var(--amber);
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: color 180ms, border-color 180ms;
+}
+.log-list span[data-cmd]:hover,
+.log-list span[data-cmd]:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+.term-window__aside {
+  color: var(--text-muted) !important;
+  font-size: var(--fs-small) !important;
+  font-family: var(--font-mono) !important;
+}
+.term-window__aside span[data-cmd] {
+  color: var(--amber);
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: color 180ms, border-color 180ms;
+}
+.term-window__aside span[data-cmd]:hover,
+.term-window__aside span[data-cmd]:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+
+/* ---------------------------------------------------------------------------
    08. SITE LOGO
    Fixed top-left, shared by the console and every content page. Hidden
    during the intro and faded in once script.js hands off to the console

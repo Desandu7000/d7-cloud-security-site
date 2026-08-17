@@ -113,7 +113,8 @@
       <p id="console-feedback" class="console__feedback" role="status" aria-live="polite"></p>
 
       <p class="console__hint">
-        new here? type <span data-cmd="help">help</span> to see what you can explore
+        new here? type <span data-cmd="home">home</span> to begin, or <span data-cmd="help">help</span> to see
+        everything
       </p>
 
     </div>
@@ -123,6 +124,83 @@
 
 
   <!-- Content Pages -->
+
+  <!--
+    Page: Home
+    Carries the scroll-driven hero (the infographic). The hero element is
+    position:fixed — the section scrolls underneath it — so shrinking it is
+    a pure transform with no layout reflow. .hero__spacer inside
+    .page__inner is what supplies the scroll distance; script.js measures
+    the image and drives the transform from scroll progress.
+  -->
+  <section id="page-home" class="screen screen--page" aria-label="Home" data-page="home">
+
+    <div class="hero" data-hero>
+      <!-- Opaque bar the pinned thumbnail sits on, so page content scrolling
+           up behind it is masked rather than colliding with it. -->
+      <div class="hero__bar" aria-hidden="true"></div>
+
+      <button type="button" class="hero__frame" data-hero-frame aria-label="Expand infographic to full size">
+        <img class="hero__img" data-hero-img src="assets/web/Top_Three_Cloud_Security_Risks_Infographic.jpg"
+          alt="Infographic titled The Vulnerability of the Cloud: Top 3 Security Risks, summarising data breaches, identity and access management, and malware and ransomware." />
+      </button>
+
+      <p class="hero__prompt" data-hero-prompt aria-hidden="true">
+        scroll to continue <span class="hero__prompt-arrow">&darr;</span>
+      </p>
+    </div>
+
+    <div class="page__inner">
+      <div class="hero__spacer" data-hero-spacer aria-hidden="true"></div>
+
+      <pre class="page__access-log"
+        aria-hidden="true"><span class="page__access-line">&gt; initialising d7.sys ...</span><span class="page__access-line">&gt; mounting topic: cloud_computing_security ......... OK</span></pre>
+
+      <article class="term-window">
+        <header class="term-window__bar">
+          <span class="term-dot term-dot--red"></span>
+          <span class="term-dot term-dot--amber"></span>
+          <span class="term-dot term-dot--green"></span>
+          <span class="term-window__title">home</span>
+        </header>
+        <div class="term-window__body">
+          <h2 class="term-window__heading" data-typewriter>Cloud Computing and Security Issues</h2>
+
+          <!-- Home_page.jpg: the small static topic image, sitting alongside
+               the welcome copy rather than acting as a second hero. -->
+          <div class="welcome-lead">
+            <img class="welcome-lead__img" src="assets/web/Home_page.jpg"
+              alt="A glowing cloud outline containing a padlock and circuit traces, representing cloud computing security." />
+            <div class="welcome-lead__text">
+              <p data-typewriter>Most organisations don't buy their own hardware anymore. They rent storage, software and
+                processing power and pay only for what they use. It's cheaper, and they can scale up or down whenever
+                they need to. Even small businesses can now run on the same computing power as large ones without paying
+                to build it.</p>
+            </div>
+          </div>
+
+          <p data-typewriter>The trade-off is control. Data that used to sit inside a company's own building now sits on
+            infrastructure the company doesn't own and can't fully see. That's why the biggest objection to moving to the
+            cloud isn't cost or speed. It's security.</p>
+
+          <p class="term-window__code" data-typewriter>&gt; three logs available for inspection:</p>
+
+          <ul class="log-list">
+            <li><span data-cmd="data breach">data_breach.log</span> &mdash; what happens when shared storage is
+              compromised</li>
+            <li><span data-cmd="iam">iam.log</span> &mdash; who has access, and why that list goes stale</li>
+            <li><span data-cmd="malware">malware.log</span> &mdash; how infected users bring down cloud services</li>
+          </ul>
+
+          <p class="term-window__aside">Type <span data-cmd="help">help</span> to see the available commands.</p>
+        </div>
+      </article>
+
+      <p class="page__prompt">
+        click <span data-cmd="back">back</span> or press <span class="page__prompt-key">[esc]</span> to return to console
+      </p>
+    </div>
+  </section>
 
   <!-- Page: Data Breach -->
   <section id="page-databreach" class="screen screen--page" aria-label="Data Breach" data-page="databreach">

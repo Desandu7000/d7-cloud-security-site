@@ -1,30 +1,33 @@
 /* ============================================================================
-   D7 — Cloud Computing and Security Issues
+   D7 - Cloud Computing and Security Issues
    styles.css
 
-   Sections:
-     01. Design tokens (custom properties)
+   This file is split into numbered sections (like a table of contents) so
+   it's easier to find what you're looking for:
+     01. Design tokens (all the colours/spacing/etc in one place)
      02. Reset & base
      03. Utilities
-     04. Texture overlays (grid / scanlines / vignette)
-     05. Screen system (intro <-> console cross-fade)
+     04. Texture overlays (grid / scanlines / vignette - the CRT-screen look)
+     05. Screen system (switching between the gate/intro/console/pages)
      06. Intro screen
      07. Console screen
-     07b. Content pages (terminal-window, background canvas, video, footer)
+     07b. Content pages (the terminal-window look, backgrounds, video, footer)
      08. Site logo
-     08b. Small-screen block
-     09. Responsive breakpoints
+     09. Responsive breakpoints (phone/tablet sizing)
      10. Reduced-motion / accessibility fallbacks
      11. Print stylesheet (references page only)
    ========================================================================== */
 
 
 /* ---------------------------------------------------------------------------
-   01. DESIGN TOKENS
-   Everything colour-, spacing- and timing-related lives here as a CSS custom
-   property, so the whole site can be re-themed from one block.
-   Palette: deep navy base, cyan primary accent, amber secondary accent.
-   Deliberately avoids the cliché pure-green-on-black terminal look.
+   01. DESIGN TOKENS (basically just variables for colours etc.)
+   I put every colour, spacing value and animation timing here as a CSS
+   variable (the --something-like-this values) instead of typing the actual
+   value everywhere, so if I want to change a colour I only have to change
+   it in one place instead of hunting through the whole file.
+   Colour scheme: dark navy background, cyan as the main accent colour,
+   amber/orange as a second accent. I didn't want to just do plain green
+   text on black since that's the obvious "hacker terminal" cliché.
 --------------------------------------------------------------------------- */
 :root {
   /* Backgrounds — layered from darkest (page) to lightest (raised panel) */
@@ -1838,106 +1841,15 @@ button { font: inherit; color: inherit; }
 
 
 /* ---------------------------------------------------------------------------
-   08b. SMALL-SCREEN BLOCK
-   Hidden by default; the media query at the top of section 09 below is what
-   actually shows it (and hides the real site) below ~768px. Pure CSS is
-   deliberate here — no JS dependency means it works from the very first
-   paint, and live-updates on resize/rotation with no extra code.
---------------------------------------------------------------------------- */
-.small-screen-block {
-  display: none;   /* becomes flex under the max-width: 767px query below */
-  position: fixed;
-  inset: 0;
-  z-index: 9999;   /* above the logo (950) and fx overlays (900s) */
-
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-
-  background: var(--bg-void);
-}
-
-.small-screen-block__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 24rem;
-}
-
-.small-screen-block__logo {
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 50%;
-  border: 1px solid var(--line-accent);
-  box-shadow: 0 0 24px var(--accent-glow);
-  object-fit: cover;
-}
-
-/* Same terminal-window chrome as the content pages (Mac-style dots, title
-   bar) so this reads as part of the same system, not a generic error page. */
-.small-screen-block__window {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg-panel);
-  overflow: hidden;
-  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
-}
-
-.small-screen-block__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0.7em 0.9em;
-  background: var(--bg-chrome);
-  border-bottom: 1px solid var(--line);
-}
-
-.small-screen-block__title {
-  margin-left: 0.4em;
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-}
-
-.small-screen-block__body {
-  padding: 1.35rem 1.15rem;
-  text-align: left;
-}
-
-.small-screen-block__code {
-  margin: 0 0 0.9em;
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  color: var(--amber);
-  letter-spacing: 0.03em;
-}
-
-.small-screen-block__message {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: var(--fs-body);
-  color: var(--text-body);
-  line-height: 1.6;
-}
-
-
-/* ---------------------------------------------------------------------------
    09. RESPONSIVE
-   The fluid clamp() type scale handles most of the work; these breakpoints
-   only fix the things that genuinely need re-arranging on small screens.
+   Used to just show a "please use a bigger screen" message below 768px
+   instead of actually being responsive. I changed my mind on that and made
+   it work properly on phones instead, since most people would probably
+   open a link like this on their phone first. The clamp() font sizes I
+   already had everywhere did most of the work for free - these breakpoints
+   just fix up the specific bits that needed rearranging for a narrow screen
+   (the console, the gate, the hero image, that sort of thing).
 --------------------------------------------------------------------------- */
-
-/* Below this width, the site itself is not made responsive — the
-   small-screen block above takes over instead (see section 08b) and the
-   real content stays hidden and non-scrollable behind it. */
-@media (max-width: 767px) {
-  .small-screen-block { display: flex; }
-  body { overflow: hidden !important; }
-}
 
 /* Tablet and below */
 @media (max-width: 768px) {
@@ -1949,6 +1861,15 @@ button { font: inherit; color: inherit; }
       repeating-linear-gradient(to bottom,
         rgba(70, 230, 208, 0.05) 0 1px, transparent 1px 40px);
   }
+
+  .console__inner { width: 100%; }
+  .console-bar { width: 100%; }
+
+  .gate__inner { gap: var(--gap-sm); }
+  .settings-row { padding: 0.7em 0.85em; }
+  .settings-row__desc { font-size: 0.75rem; }
+
+  .term-window__body { padding: var(--gap-md); }
 }
 
 /* Phone */
@@ -1962,15 +1883,40 @@ button { font: inherit; color: inherit; }
   .intro-title__line--presents { letter-spacing: 0.2em; }
   .intro-title__line--main     { max-width: 14ch; }
 
-  /* Wide letter-spacing runs out of room on a narrow screen — tighten it
+  /* Wide letter-spacing runs out of room on a narrow screen - tighten it
      so the subtitle keeps a comfortable margin either side. */
   .intro-sub__text { letter-spacing: 0.16em; }
 
-  /* Centre the skip button along the bottom — easier thumb target. */
+  /* Centre the skip button along the bottom - easier thumb target. */
   .skip-btn {
     right: 50%;
     transform: translateX(50%);
     bottom: 1.25rem;
+  }
+
+  .gate__title { font-size: 1.35rem; }
+  .gate__lead { font-size: 0.85rem; }
+  .gate__continue { padding: 0.7em 1.8em; width: 100%; }
+
+  .settings-row {
+    flex-wrap: wrap;
+  }
+  .settings-row__text { order: 2; flex-basis: 100%; }
+  .settings-row__icon { order: 1; }
+  .switch { order: 3; margin-left: auto; }
+
+  .hero__prompt { font-size: 0.65rem; }
+
+  .page__inner { padding-inline: var(--gap-sm); }
+
+  /* The pinned command bar is normally centred (left: 50%), but at this
+     width that puts its left edge right underneath the logo in the top
+     corner. Pin it to fixed left/right edges that clear the logo instead. */
+  .console-bar--pinned {
+    left: 3.75rem;
+    right: 0.75rem;
+    transform: none;
+    width: auto;
   }
 }
 

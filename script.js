@@ -1,26 +1,28 @@
 /* ============================================================================
-   D7 — Cloud Computing and Security Issues
+   D7 - Cloud Computing and Security Issues
    script.js
 
-   STAGE 0: TYPING SOUND ENGINE
+   This whole file is basically split into "stages" - each one is a chunk of
+   code wrapped in its own function that runs itself straight away, so the
+   variables inside don't leak into the other stages and mess things up.
 
-   A soft synthesised key-click, played by the intro's title typewriter and
-   the console's command line — window.D7Sound.play(). (The content pages'
-   own body-text typewriter, Stage 2, deliberately does NOT call this: at
-   that speed, over a whole paragraph, a click per character overlapped
-   into a noisy blur rather than discrete keystrokes, so it plays no sound
-   at all instead.)
+   STAGE 0: TYPING SOUND
 
-   No audio file is used — just a short filtered noise burst through the
-   Web Audio API, so there's nothing to download and no licensing to worry
-   about.
+   Makes a little "click" sound when the title/console text is typing in.
+   window.D7Sound.play() is how the rest of the file triggers it. The
+   bullet-point text on the actual content pages does NOT play this sound
+   (I turned it off there on purpose) because typing a whole paragraph with
+   a click on every letter just sounded like noise, not like typing.
 
-   Muted by default unless a prior visit's preference says otherwise
-   (persisted to localStorage, not a cookie — nothing here is server-side,
-   so there's nothing a cookie would need to be sent to). Browsers block
-   audio from playing before a user gesture regardless of that preference,
-   so the sound switch's click IS that gesture — turning it on both
-   creates/resumes the AudioContext and flips the mute flag in one action.
+   I didn't use a sound file for this - it's generated in the browser using
+   the Web Audio API (basically just a short burst of static filtered down
+   to sound like a key click). Saves having to upload an audio file.
+
+   It starts off muted unless you already switched it on last time you
+   visited (saved using localStorage - see the note further down about why
+   I used that instead of a cookie). Browsers also won't let a website play
+   any sound at all until you've clicked something on the page first, so
+   turning the switch on is also what "unlocks" the audio for the browser.
    ========================================================================== */
 
 (function () {
@@ -128,22 +130,22 @@
 
 
 /* ============================================================================
-   STAGE 0b: MOTION PREFERENCE
+   STAGE 0b: REDUCE ANIMATIONS SWITCH
 
-   A manual "reduce animations" toggle, independent of the OS-level
-   prefers-reduced-motion media query. Every other stage's own
-   prefersReducedMotion() helper (Stage 1, 1b, canvas backgrounds, video)
-   reads window.D7Motion.reduced instead of matchMedia() directly — this is
-   the one shared source of truth all of them defer to.
+   This is a switch I made myself for turning animations off, separate from
+   the "reduce motion" setting some people have turned on in their own
+   computer/phone settings. Every other part of this file that needs to
+   check "should I animate this or not?" just checks window.D7Motion.reduced
+   instead of checking the browser setting directly, so there's only one
+   place this logic lives.
 
-   Defaults to OFF (animations on) regardless of the OS setting: several of
-   this site's effects (the hero glitch, the scroll-driven shrink, the
-   canvas backgrounds) are part of the actual design, not just flourish, so
-   silently skipping them for anyone whose OS happens to have reduced-
-   motion switched on would make the site look broken rather than considerate.
-   The choice is offered explicitly instead, via this switch, and persisted
-   (to localStorage — see Stage 0's note on why not a cookie) across visits
-   once someone actually makes it.
+   I made it default to animations ON even if someone's device settings say
+   "reduce motion", because a few of the animations here (like the image
+   glitch effect and the scroll effect) are actually part of what I'm being
+   marked on for this assignment, not just decoration. So instead of
+   guessing what people want, I just give them an actual switch to turn it
+   off if they want to. Saved with localStorage (see Stage 0's comment above
+   for why not a cookie) so it remembers your choice next time.
    ========================================================================== */
 
 window.D7Motion = (function () {
@@ -192,17 +194,19 @@ window.D7Motion = (function () {
 
 
 /* ============================================================================
-   STAGE 0c: STARTUP GATE
+   STAGE 0c: STARTUP SCREEN (THE "BEFORE WE START" SCREEN)
 
-   Wires the #gate screen's Continue button. The intro (Stage 1, just below)
-   doesn't start itself — it exposes window.D7StartIntro instead and waits
-   for this module to call it, which only happens once someone dismisses
-   the gate. That's also why the sound/animation switches live here first,
-   ahead of the settings page: Continue's click is a real user gesture,
-   which is what actually lets the sound switch's AudioContext.resume()
-   succeed (see Stage 0 and D7Sound.unlock()) — waiting until someone found
-   the settings page on their own would mean the intro's first few
-   keystrokes played silently even with sound switched on.
+   This handles the Continue button on the very first screen you see. The
+   intro animation (Stage 1 below) doesn't run by itself anymore - it waits
+   for this code to tell it to start (through window.D7StartIntro), which
+   only happens once you click Continue.
+
+   I put the sound/animation switches on this screen instead of just
+   letting people find the settings page later, because clicking Continue
+   is a proper "user click" that the browser will accept for unlocking
+   audio. If I waited for someone to discover the settings page on their
+   own, the first bit of typing sound would have already tried (and failed)
+   to play before that.
    ========================================================================== */
 
 (function () {
@@ -242,15 +246,15 @@ window.D7Motion = (function () {
 
 
 /* ============================================================================
-   STAGE 1: the landing intro.
+   STAGE 1: the landing intro (the typing title screen you see first).
 
-   The whole intro is one asynchronous "timeline" function. Each beat of the
-   animation is an `await` — that keeps the sequence readable top-to-bottom
-   instead of turning into nested setTimeout callbacks.
+   This whole animation is written as one function that runs step by step
+   using await/sleep, so it reads top to bottom like a list of steps
+   instead of a mess of setTimeout calls calling each other.
 
-   Contents:
+   What's in this section:
      00. Setup & element references
-     01. Small helpers (sleep, abortable waiting, reduced-motion check)
+     01. Small helpers (sleep, skip-able waiting, reduced-motion check)
      02. Caret positioning
      03. Typewriter
      04. Boot log
@@ -264,8 +268,9 @@ window.D7Motion = (function () {
 
   /* --------------------------------------------------------------------------
      00. SETUP
-     Everything is wrapped in an IIFE (Immediately Invoked Function Expression)
-     so none of these variables leak into the global scope.
+     This is wrapped in a function that calls itself right away (you'll see
+     the `})();` at the very bottom), just so none of these variables leak
+     out and clash with variables in the other sections of this file.
   -------------------------------------------------------------------------- */
 
   var el = {
@@ -606,13 +611,13 @@ window.D7Motion = (function () {
 /* ============================================================================
    STAGE 2: THE CONSOLE + ROUTER
 
-   Handles the command line on the console screen and the terminal-style
-   pages it opens. Kept as its own IIFE (separate from the intro above) since
-   the two stages don't share state — this one only starts reacting once the
-   console screen exists, whether that's after the intro plays or right away
-   for a skipped intro.
+   This is the big one - it handles the command input box and all the page
+   switching when you type a command like "home" or "iam". It's in its own
+   self-running function, separate from the intro section above, because it
+   doesn't need anything from the intro - it just starts working as soon as
+   the console screen exists, whether you watched the whole intro or skipped it.
 
-   Contents:
+   What's in this section:
      00. Setup & element references
      01. Command table (typed text -> target page)
      02. Screen switching (console <-> page, with the reveal replay)
@@ -784,25 +789,20 @@ window.D7Motion = (function () {
   var ERASE_CHUNK  = 8;    // characters removed per erase tick — leaving should read as quick
   var WINDOW_REVEAL_MS = 900;   // matches the term-window's own CSS fade-in timing
 
-  /* Cancellation uses a generation TOKEN rather than a shared boolean flag.
-     Why: a simple `aborted = true/false` flag has a real race. showConsole()
-     calls skipPageTypeIn() (sets aborted=true, wakes the pending timer) and
-     then IMMEDIATELY runPageEraseOut() (whose first line used to reset
-     aborted=false) — all synchronously. But resolving a Promise never
-     resumes its awaiter synchronously; that resumption is queued as a
-     microtask. So the old type-in's paused `await typeElementText(...)`
-     doesn't actually get a chance to check the abort flag until AFTER the
-     erase sequence has already reset it back to false — the old sequence
-     would see aborted=false and just keep going, typing forward while the
-     new erase sequence deleted characters, racing on the same elements.
-     (This is exactly what happened — measured as text length oscillating
-     up and down mid-outro instead of monotonically shrinking.)
+  /* This bit took me a while to get right. At first I just had one
+     true/false "aborted" flag to stop the typing when you leave a page
+     early. The problem: if you left a page WHILE it was still typing, two
+     things tried to run at once - the old typing was still half-finished
+     in the background while the new "erase the text" animation started -
+     and they both edited the same text at the same time. It looked glitchy,
+     like the text was randomly growing and shrinking instead of just
+     erasing normally.
 
-     Each sequence now calls beginSequence() to get its own token and
-     checks isCurrent(token) instead of a shared flag. Even if a stale
-     microtask resumes after a newer sequence has started, its captured
-     token no longer matches typeState.token, so it correctly stops itself
-     — regardless of exactly when its resumption happens to be scheduled. */
+     My fix: instead of one shared flag, every new typing/erasing run gets
+     its own ID number (see beginSequence() below). Before doing anything,
+     each step checks "is my ID still the current one?" - if a newer run
+     has already started, the old one just quietly stops itself instead of
+     fighting with the new one over the same text. */
   var typeState = { token: 0, wake: null };
   var TYPE_ABORT = { abort: true };
 
@@ -1769,21 +1769,23 @@ window.D7Motion = (function () {
 /* ============================================================================
    STAGE 3: PAGE BACKGROUND ANIMATIONS
 
-   One <canvas> per content page (see .page__bg in the HTML), each drawn by
-   a small self-contained "draw" function. The router (Stage 2) starts the
-   matching animation when a page opens and stops it when the page closes,
-   via the window.D7Backgrounds.start/stop/stopAll API defined below — only
-   the currently-open page's canvas is ever actually animating.
+   Each content page has its own <canvas> in the background (see .page__bg
+   in the HTML) with its own little animation drawn onto it with plain
+   JavaScript - no library for this. The router in Stage 2 starts the right
+   one when you open a page and stops it again when you leave, using the
+   window.D7Backgrounds.start/stop/stopAll functions at the bottom of this
+   section, so only the page you're actually looking at is animating (no
+   point wasting the browser's effort animating something off-screen).
 
-   Under prefers-reduced-motion, every page draws exactly one frame and does
-   not loop, matching how the intro handles the same preference.
+   If animations are switched off, each page just draws one still frame
+   instead of looping.
 
-   Contents:
-     00. Engine (registry, resize, start/stop, public API)
-     01. Data breach  — falling fragments
-     02. IAM          — pulsing access-point grid
-     03. Malware      — spreading infection graph
-     04. Wiring
+   What's in this section:
+     00. Engine (keeps track of every canvas, resize, start/stop)
+     01. Data breach  - falling fragments
+     02. IAM          - pulsing access-point grid
+     03. Malware      - spreading infection graph
+     04. Wiring it all up
    ========================================================================== */
 
 (function () {
@@ -2162,22 +2164,16 @@ window.D7Motion = (function () {
 /* ============================================================================
    STAGE 4: VIDEO CONTROLLER (data breach page)
 
-   The embedded YouTube video starts muted (a browser requirement for any
-   autoplay) and is played/paused automatically as it scrolls in and out of
-   view, via IntersectionObserver + the YouTube postMessage command API
-   (enablejsapi=1 on the iframe's src is what allows this — see the HTML).
-   No YouTube script is loaded; posting directly to the already-embedded
-   player is enough, so this stays "no external dependencies".
+   This was meant to auto-play/pause the embedded YouTube video as you
+   scroll it into and out of view, using YouTube's postMessage API (no
+   YouTube script needed for that, just messaging the iframe directly).
 
-   Under prefers-reduced-motion, scroll-triggered autoplay is skipped
-   entirely — the video just sits there as a normal embed the user presses
-   play on themselves.
-
-   NOTE: the data breach page currently shows a "watch on YouTube" fallback
-   card instead of a real embed (its video has embedding disabled by the
-   owner — see the HTML comment above the markup). That fallback has no
-   [data-yt-iframe] element, so this whole module is a deliberate no-op
-   until a working, embeddable video ID is swapped back in.
+   IMPORTANT: I ended up NOT using a real embed on the Data Breach page -
+   the video I wanted to use has embedding turned off by whoever uploaded
+   it, so there's just a "watch on YouTube" link/thumbnail card there
+   instead (see the HTML). Because of that, this whole section never
+   actually finds the iframe it's looking for and does nothing. I left the
+   code in in case I swap in a different, embeddable video later.
    ========================================================================== */
 
 (function () {

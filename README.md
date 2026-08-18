@@ -1,95 +1,105 @@
-# D7 — Cloud Computing and Security Issues
+# D7 - Cloud Computing and Security Issues
 
-An interactive web report exploring key security threats in cloud computing environments. Built using vanilla HTML, CSS, and JavaScript, the project presents academic research in an engaging retro-terminal format.
+This is my website for the SCI1125D assignment. It's about cloud computing security - specifically data breaches, identity and access management (IAM), and malware/ransomware. I made it look like an old computer terminal because I thought it would be a fun way to present the essay content instead of just a normal-looking webpage.
 
-Developed for **SCI1125D Professional Science Essentials** at **Edith Cowan College**.
+It's all just HTML, CSS and JavaScript - no frameworks, no libraries, no build tools. Everything is written by hand in the three main files.
 
----
-
-## 📌 Project Overview
-
-The site follows a Home → Aspect 1/2/3 → Summary structure, with each page carrying its own topic image and a scroll-driven hero effect:
-1. **Home** (`home`): Welcome message, topic infographic, and links into the three aspect pages.
-2. **Data Breaches and Exposure** (`data breach`): Bullet-point summary of third-party supply chain vulnerabilities (Target 2013 case study) and multi-tenant data leakage risks, plus a video card.
-3. **Identity and Access Management** (`iam`): Bullet-point summary of account hijacking, weak authentication, and stale permissions in dynamic cloud infrastructures.
-4. **Malware and Ransomware** (`malware`): Bullet-point summary of how compromised endpoints disrupt cloud infrastructure (Spark NZ case study) and the shared risk profile.
-5. **Summary** (`about`): Overview tying the three aspects back to the thesis, followed by the full APA 7th edition reference list with linked DOIs.
-
-The three aspect pages summarise their essay paragraph in bullet points with no in-text citations, per the assignment rubric; citations only appear in the end-text reference list on the Summary page. Content is delivered through an interactive terminal interface where users enter commands to inspect simulated log files (`data_breach.log`, `iam.log`, `malware.log`, `about.log`).
+Made for **SCI1125D Professional Science Essentials** at **Edith Cowan College**.
 
 ---
 
-## 🛠️ Technical Features & Implementation
+## What's on the site
 
-- **Command-Line Interface & Routing**: Custom JavaScript router that parses commands, supports case-insensitive aliases, and manages screen transitions. Features tab-completion, inline ghost text suggestions, and a dynamic measuring caret that relocates between the console and a pinned top bar on content pages.
-- **Sequential Text Rendering**: Character-by-character typewriter presentation for headings and paragraphs, interleaved in DOM order with whole-block fade-in reveals for markup a typewriter can't type into (bullet lists, the video card, the reference section) — with reverse erase transitions and instant-skip support (`[Esc]` or click).
-- **Scroll-Driven Hero Images**: Each page's topic image opens full-size and shrinks into a pinned thumbnail as the page is scrolled, reversing on scroll-up; clicking the image at any time opens a full-screen scrollable lightbox for reading it at full clarity.
-- **Procedural Canvas Visualizations**: Lightweight, hardware-accelerated 2D canvas background simulations representing data fragmentation, scanning access grids, and network infection spread.
-- **Procedural Web Audio Synthesis**: Real-time synthesized keyboard click feedback via filtered noise bursts using the Web Audio API, eliminating external media asset dependencies.
-- **Print Stylesheet**: Dedicated print media styles (`@media print`) rendering a clean, black-and-white academic citation view regardless of the current active screen.
-- **Desktop Optimization**: Styled layout tailored for desktop screen viewports, providing a resolution warning notice for smaller displays.
-- **Accessibility**: Respects `prefers-reduced-motion` preferences by instantly completing animations and displaying static views.
+The site follows the Home → Aspect 1/2/3 → Summary structure from the assignment rubric. Each page has its own image and a "hero" effect where the image starts big and shrinks up to the top as you scroll.
+
+1. **Home** (`home`) - welcome text, the topic infographic, and links to the three aspect pages.
+2. **Data Breach** (`data breach`) - my first essay paragraph, turned into bullet points. Also has a video about the Target data breach.
+3. **IAM** (`iam`) - my second essay paragraph as bullet points, about identity and access management problems.
+4. **Malware** (`malware`) - my third essay paragraph as bullet points, about malware and ransomware.
+5. **Summary** (`about`) - ties the three topics back together, plus my full reference list at the bottom.
+
+The rubric said the three aspect pages shouldn't have in-text references (just bullet points), so all my citations only show up in the reference list on the Summary page.
 
 ---
 
-## 🚀 How to Run the Project
+## How it works
 
-The application requires no external frameworks, dependencies, or build tools. It runs directly in any modern desktop web browser.
+- You "navigate" the site by typing commands into a terminal-style input box, kind of like a command line. There's also a `help` command if you forget what to type.
+- Text on each page types itself out letter by letter, like it's being typed live. You can click anywhere on the text to skip straight to the end if you don't want to wait.
+- Each page has a big image at the top that shrinks and moves up as you scroll down, then the text underneath fades/types in. Clicking the image opens it full-size in a pop-up so you can actually read the infographic properly.
+- There's a "glitch" animation on the images when a page opens - it's meant to look like a screen glitching, to fit the terminal theme.
+- Typing has a small clicking sound effect (like a keyboard), and there's a switch to turn that on or off, plus a switch to turn off the animations if someone doesn't want all the moving stuff. Both switches are on a "before we start" screen that shows up first, and there's also a `settings` command if you want to change them again later.
+- If your browser/OS says you prefer reduced motion, most of this still works the same, since the animation switch is a separate thing you control directly (I did this because a lot of these animations are actually part of the assignment marking, e.g. the infographic scroll effect, so I didn't want them to just silently turn off for some visitors without asking).
+- There's a print stylesheet so if you print the page (or print to PDF) from the Summary page it prints my references in a normal, readable black-and-white format instead of the dark terminal colours.
+- The site shows a "please use a bigger screen" message if the browser window is too narrow, since I didn't have time to make it fully mobile-friendly.
 
-### Option 1: Direct File Access
-Clone the repository and open `index.html`:
+---
+
+## How to run it
+
+No installs needed, just open it in a browser.
+
+### Option 1: just open the file
 ```bash
 git clone https://github.com/Desandu7000/d7-cloud-security-site.git
 cd d7-cloud-security-site
 start index.html
 ```
 
-### Option 2: Local HTTP Server
-Run a local development server using Python:
+### Option 2: run a local server
+Some things (like the video) work a bit better through a real server instead of opening the file directly:
 ```bash
 python -m http.server 3000
 ```
-Open `http://localhost:3000` in your web browser.
+Then go to `http://localhost:3000` in your browser.
 
 ---
 
-## ⌨️ Console Navigation
+## Commands you can type
 
-| Command | Accepted Aliases | Function |
+| Command | Other words that also work | What it does |
 |---|---|---|
-| `home` | `start`, `welcome`, `index` | View the Home page |
-| `data breach` | `databreach`, `breach` | View Data Breach analysis (`data_breach.log`) |
-| `iam` | `identity and access management`, `identity access management` | View IAM analysis (`iam.log`) |
-| `malware` | `ransomware`, `malware and ransomware` | View Malware/Ransomware analysis (`malware.log`) |
-| `about` | `references`, `refs`, `reference`, `summary` | View the Summary page & APA7 references (`about.log`) |
-| `back` | `console`, `exit`, `menu` | Return to main command console |
-| `help` | `?`, `commands` | Lists the available commands |
+| `home` | `start`, `welcome`, `index` | Go to the Home page |
+| `data breach` | `databreach`, `breach` | Go to the Data Breach page |
+| `iam` | `identity and access management`, `identity access management` | Go to the IAM page |
+| `malware` | `ransomware`, `malware and ransomware` | Go to the Malware page |
+| `about` | `references`, `refs`, `reference`, `summary` | Go to the Summary page (has my references) |
+| `settings` | `options`, `preferences` | Turn the sound/animation switches on or off |
+| `back` | `console`, `exit`, `menu` | Go back to the main terminal screen |
+| `help` | `?`, `commands` | Shows the list of commands |
 
-*Tips: `[Esc]` returns to the console (press again mid-transition to skip the closing animation). `[Tab]` autocompletes a partial command. Clicking a page's text while it's typing in reveals it instantly.*
+Some extra things: pressing `Esc` also takes you back, `Tab` autocompletes whatever you're typing, and clicking on a page while it's typing skips straight to the finished text.
 
 ---
 
-## 📁 Repository Structure
+## Folder structure
 
 ```
 d7-cloud-security-site/
 ├── assets/
-│   ├── web/              # Page hero & topic images (Home, aspect pages, Summary)
-│   ├── favicon.svg       # Favicon
-│   └── logo.jpg          # Project logo
-├── index.html            # Main semantic HTML structure & screen markup
-├── styles.css            # Styling, design tokens, layout & CRT visual effects
-├── script.js             # Router, typewriter engine, hero scroll effect, Web Audio synth & canvas FX
-├── .gitignore            # Git ignore rules
-└── README.md             # Project documentation
+│   ├── web/              # the images used on each page
+│   ├── favicon.svg       # little tab icon
+│   └── logo.jpg          # logo used in the corner
+├── index.html            # all the page content/structure
+├── styles.css            # all the colours, fonts, layout, animations
+├── script.js             # everything that makes the site actually work (commands, typing effect, etc.)
+├── .gitignore
+├── LICENSE                # see below
+└── README.md
 ```
 
 ---
 
-## 👤 Academic Details
+## License
 
-- **Student Name:** Desandu Hettiarachchi
+This is public so it can be looked at, not so it can be copied. See [LICENSE](LICENSE) for the full terms, but the short version is: you're welcome to read it, but please don't submit this (or a changed version of it) as your own assignment, and if it inspires something of yours, credit me and link back here.
+
+---
+
+## About me
+
+- **Name:** Desandu Hettiarachchi
 - **Student ID:** 74007597
 - **Institution:** Edith Cowan College
-- **Course / Unit:** SCI1125D Professional Science Essentials
-- **Profiles:** [LinkedIn](https://www.linkedin.com/in/desanduthettiarachchi/) &bull; [GitHub](https://github.com/Desandu7000)
+- **Course/Unit:** SCI1125D Professional Science Essentials
+- **Links:** [LinkedIn](https://www.linkedin.com/in/desanduthettiarachchi/) · [GitHub](https://github.com/Desandu7000)

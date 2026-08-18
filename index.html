@@ -15,31 +15,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <!-- The ?v=1 on the end is just to stop browsers using an old cached
+       copy of this file after I upload changes. GitHub Pages doesn't
+       change the file's URL when it updates, so without this a browser
+       that already has styles.css saved might keep using the old one for
+       a while. If I edit styles.css and the site looks wrong after
+       uploading, bump this number (v=2, v=3, ...) so browsers know to
+       grab the new version. -->
+  <link rel="stylesheet" href="styles.css?v=1" />
 </head>
 
 <body>
-
-  <!-- Viewport width alert for small screens (managed via CSS) -->
-  <div class="small-screen-block" role="alert">
-    <div class="small-screen-block__inner">
-      <img class="small-screen-block__logo" src="assets/logo.jpg" alt="D7 Systems logo" />
-
-      <div class="small-screen-block__window">
-        <header class="small-screen-block__bar">
-          <span class="term-dot term-dot--red"></span>
-          <span class="term-dot term-dot--amber"></span>
-          <span class="term-dot term-dot--green"></span>
-          <span class="small-screen-block__title">viewport_error.log</span>
-        </header>
-        <div class="small-screen-block__body">
-          <p class="small-screen-block__code">&gt; ERROR: viewport width below minimum</p>
-          <p class="small-screen-block__message">This experience is built for larger screens. Please view on a desktop
-            or laptop for the full effect.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Texture overlays -->
   <div class="fx-grid" aria-hidden="true"></div>
@@ -670,7 +656,9 @@
     </div>
   </section>
 
-  <script src="script.js"></script>
+  <!-- Same reason as styles.css above - bump this number too whenever I
+       change script.js. -->
+  <script src="script.js?v=1"></script>
 </body>
 
 </html>

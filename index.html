@@ -59,6 +59,17 @@
     <span data-sound-label>sound off</span>
   </button>
 
+  <!-- Reduce Animations Toggle. Visible everywhere (unlike sound-toggle,
+       which only makes sense while something is typing) since the hero
+       glitch, scroll-shrink and canvas backgrounds run on every content
+       page. Defaults to animations on regardless of the OS-level
+       prefers-reduced-motion setting — see script.js Stage 0b. -->
+  <button id="motion-toggle" class="motion-toggle" type="button" aria-pressed="false"
+    aria-label="Toggle reduced animations">
+    <span class="motion-toggle__icon" aria-hidden="true">&#9889;</span>
+    <span data-motion-label>animations on</span>
+  </button>
+
   <!--
     Hero image lightbox. One shared instance reused by every hero page —
     script.js points its <img> at whichever image was clicked. Full-screen,
@@ -71,7 +82,9 @@
       &times;
     </button>
     <div class="hero-lightbox__scroll" data-lightbox-scroll>
-      <img class="hero-lightbox__img" data-lightbox-img src="" alt="" />
+      <span class="hero-lightbox__img-wrap" data-lightbox-imgwrap>
+        <img class="hero-lightbox__img" data-lightbox-img src="" alt="" />
+      </span>
     </div>
   </div>
 
@@ -543,12 +556,22 @@
         <p>Edith Cowan College</p>
         <p>SCI1125D Professional Science Essentials</p>
         <p class="page__footer-links">
-          <a href="https://www.linkedin.com/in/desanduthettiarachchi/" target="_blank"
-            rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://www.linkedin.com/in/desanduthettiarachchi/" target="_blank" rel="noopener noreferrer">
+            <svg class="page__footer-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.15 1.45-2.15 2.94v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+            </svg>
+            LinkedIn
+          </a>
           <span aria-hidden="true">&middot;</span>
-          <a href="https://github.com/Desandu7000" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/Desandu7000" target="_blank" rel="noopener noreferrer">
+            <svg class="page__footer-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.53 9.53 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z" />
+            </svg>
+            GitHub
+          </a>
         </p>
-        <p class="page__footer-note">Built with HTML, CSS, and JavaScript.</p>
       </footer>
 
       <p class="page__prompt">

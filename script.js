@@ -89,6 +89,69 @@
 
 
 /* ============================================================================
+   STAGE 0b: MOTION PREFERENCE
+
+   A manual "reduce animations" toggle, independent of the OS-level
+   prefers-reduced-motion media query. Every other stage's own
+   prefersReducedMotion() helper (Stage 1, 1b, canvas backgrounds, video)
+   reads window.D7Motion.reduced instead of matchMedia() directly — this is
+   the one shared source of truth all of them defer to.
+
+   Defaults to OFF (animations on) regardless of the OS setting: several of
+   this site's effects (the hero glitch, the scroll-driven shrink, the
+   canvas backgrounds) are part of the actual design, not just flourish, so
+   silently skipping them for anyone whose OS happens to have reduced-
+   motion switched on would make the site look broken rather than considerate.
+   The choice is offered explicitly instead, via this button, and persisted
+   across visits once someone actually makes it.
+   ========================================================================== */
+
+window.D7Motion = (function () {
+  'use strict';
+
+  var STORAGE_KEY = 'd7-reduce-motion';
+  var btn = document.getElementById('motion-toggle');
+  var state = { reduced: false };
+
+  try {
+    var saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === '1') { state.reduced = true; }
+  } catch (e) { /* localStorage unavailable (e.g. private browsing) — default stands */ }
+
+  function updateButton() {
+    if (!btn) { return; }
+    btn.setAttribute('aria-pressed', String(state.reduced));
+    var label = btn.querySelector('[data-motion-label]');
+    if (label) { label.textContent = state.reduced ? 'animations off' : 'animations on'; }
+    var icon = btn.querySelector('.motion-toggle__icon');
+    if (icon) { icon.textContent = state.reduced ? '⏸' : '⚡'; }
+  }
+
+  function setReduced(value) {
+    state.reduced = !!value;
+    try { window.localStorage.setItem(STORAGE_KEY, state.reduced ? '1' : '0'); }
+    catch (e) { /* nothing to persist to — the toggle still works for this visit */ }
+    updateButton();
+    /* Every other stage checks window.D7Motion.reduced directly rather than
+       listening for this — nothing currently needs to react mid-animation
+       to a toggle, only at the start of the next one. Dispatched anyway in
+       case that changes later. */
+    document.dispatchEvent(new CustomEvent('d7motionchange', { detail: { reduced: state.reduced } }));
+  }
+
+  if (btn) {
+    btn.addEventListener('click', function () { setReduced(!state.reduced); });
+  }
+  updateButton();
+
+  return {
+    get reduced() { return state.reduced; },
+    set: setReduced
+  };
+})();
+
+
+/* ============================================================================
    STAGE 1: the landing intro.
 
    The whole intro is one asynchronous "timeline" function. Each beat of the
@@ -161,8 +224,11 @@
   /* True when the visitor's operating system is set to "reduce motion".
      We honour it by playing the intro instantly instead of animating it. */
   function prefersReducedMotion() {
-    return window.matchMedia &&
-           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+       the OS-level prefers-reduced-motion media query, since several of
+       this site's animations are the design, not just flourish; the
+       choice is offered explicitly via the button instead of inferred. */
+    return !!(window.D7Motion && window.D7Motion.reduced);
   }
 
   /* An abortable pause.
@@ -554,8 +620,11 @@
      (see styles.css section 10), so showConsole() skips its matching JS
      delay too rather than sitting on a blank-looking page for no reason. */
   function prefersReducedMotion() {
-    return window.matchMedia &&
-           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+       the OS-level prefers-reduced-motion media query, since several of
+       this site's animations are the design, not just flourish; the
+       choice is offered explicitly via the button instead of inferred. */
+    return !!(window.D7Motion && window.D7Motion.reduced);
   }
 
   function normalise(raw) {
@@ -965,6 +1034,32 @@
      handle the same preference. */
   function heroIsStatic() { return prefersReducedMotion(); }
 
+  /* Restarts a CSS glitch animation on `el` — removes the class, forces a
+     reflow so the browser notices it's gone, re-adds it, then clears it
+     again after `duration` (a plain timeout rather than 'animationend':
+     simpler, and immune to an animationend that never fires if the class
+     gets removed from under it elsewhere). Used for both the hero image's
+     one-shot entrance glitch and the lightbox's open/close glitch. */
+  function playGlitch(el, cls, duration) {
+    if (!el) { return; }
+    clearTimeout(el._glitchTimer);
+    el.classList.remove(cls);
+    void el.offsetWidth;   /* forces the removal to take effect before re-adding */
+    el.classList.add(cls);
+    el._glitchTimer = setTimeout(function () { el.classList.remove(cls); }, duration);
+  }
+
+  /* The chromatic-aberration ghost copies (see styles.css .hero__frame::
+     before/::after) render whatever --glitch-src currently points at, so
+     it has to be (re)pointed at this hero's own image before each glitch —
+     otherwise a page opened before its image's first load, or opened a
+     second time, could flash a stale or blank ghost. */
+  function playHeroGlitch(hero) {
+    if (!hero.frame || !hero.img) { return; }
+    hero.frame.style.setProperty('--glitch-src', 'url("' + (hero.img.currentSrc || hero.img.src) + '")');
+    playGlitch(hero.frame, 'is-glitching', 640);
+  }
+
   /* --- Lightbox --------------------------------------------------------
      Clicking the hero image — pinned or full-size, doesn't matter — opens
      it full-screen and scrollable. This exists because the shrink effect
@@ -975,6 +1070,7 @@
      viewport height, so reading it is a scroll instead of a squint. */
   var lightbox       = document.getElementById('hero-lightbox');
   var lightboxImg    = lightbox && lightbox.querySelector('[data-lightbox-img]');
+  var lightboxWrap   = lightbox && lightbox.querySelector('[data-lightbox-imgwrap]');
   var lightboxScroll = lightbox && lightbox.querySelector('[data-lightbox-scroll]');
   var lightboxClose  = lightbox && lightbox.querySelector('[data-lightbox-close]');
   var lightboxOpener = null;   /* the hero.frame that opened it, for focus return on close */
@@ -985,22 +1081,45 @@
 
   function openLightbox(hero) {
     if (!lightbox || !lightboxImg) { return; }
-    lightboxImg.src = hero.img.currentSrc || hero.img.src;
+    clearTimeout(lightboxCloseTimer);
+    if (lightboxWrap) { lightboxWrap.classList.remove('is-glitching-out'); }
+    var src = hero.img.currentSrc || hero.img.src;
+    lightboxImg.src = src;
     lightboxImg.alt = hero.img.alt;
     if (lightboxScroll) { lightboxScroll.scrollTop = 0; }
     lightbox.classList.add('is-open');
     lightbox.setAttribute('aria-hidden', 'false');
     lightboxOpener = hero.frame;
+    if (!heroIsStatic() && lightboxWrap) {
+      lightboxWrap.style.setProperty('--glitch-src', 'url("' + src + '")');
+      playGlitch(lightboxWrap, 'is-glitching-in', 460);
+    }
   }
+
+  /* Set by closeLightbox() while the glitch-out plays, so a second close
+     (or opening a fresh image mid-close) can cancel the pending hide. */
+  var lightboxCloseTimer = null;
 
   function closeLightbox() {
     if (!lightbox) { return; }
-    lightbox.classList.remove('is-open');
-    lightbox.setAttribute('aria-hidden', 'true');
-    /* Return focus to whatever opened it, for keyboard/screen-reader users
-       — otherwise focus is left on a now-hidden close button. */
-    if (lightboxOpener) { lightboxOpener.focus({ preventScroll: true }); }
-    lightboxOpener = null;
+
+    function finish() {
+      lightbox.classList.remove('is-open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      if (lightboxWrap) { lightboxWrap.classList.remove('is-glitching-out'); }
+      /* Return focus to whatever opened it, for keyboard/screen-reader users
+         — otherwise focus is left on a now-hidden close button. */
+      if (lightboxOpener) { lightboxOpener.focus({ preventScroll: true }); }
+      lightboxOpener = null;
+    }
+
+    if (heroIsStatic() || !lightboxWrap) { finish(); return; }
+
+    clearTimeout(lightboxCloseTimer);
+    lightboxWrap.classList.remove('is-glitching-in');
+    void lightboxWrap.offsetWidth;
+    lightboxWrap.classList.add('is-glitching-out');
+    lightboxCloseTimer = setTimeout(finish, 280);
   }
 
   if (lightboxClose) { lightboxClose.addEventListener('click', closeLightbox); }
@@ -1055,6 +1174,7 @@
     }
 
     hero.el.classList.remove('is-static');
+    playHeroGlitch(hero);
 
     /* Force the scroll container back to the top. showPage() already does
        this, but it doesn't reliably stick: the browser restores a scroll
@@ -1576,8 +1696,11 @@
   'use strict';
 
   function prefersReducedMotion() {
-    return window.matchMedia &&
-           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+       the OS-level prefers-reduced-motion media query, since several of
+       this site's animations are the design, not just flourish; the
+       choice is offered explicitly via the button instead of inferred. */
+    return !!(window.D7Motion && window.D7Motion.reduced);
   }
 
   /* --------------------------------------------------------------------------
@@ -1967,8 +2090,11 @@
   'use strict';
 
   function prefersReducedMotion() {
-    return window.matchMedia &&
-           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+       the OS-level prefers-reduced-motion media query, since several of
+       this site's animations are the design, not just flourish; the
+       choice is offered explicitly via the button instead of inferred. */
+    return !!(window.D7Motion && window.D7Motion.reduced);
   }
 
   var wrap = document.querySelector('[data-yt-video]');

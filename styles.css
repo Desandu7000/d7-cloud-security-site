@@ -440,6 +440,48 @@ button { font: inherit; color: inherit; }
   border-color: var(--line-accent);
 }
 
+/* Reduce-animations toggle — same pill styling as .sound-toggle, mirrored
+   to the opposite (right) corner. Unlike .sound-toggle it's never hidden
+   by script.js: the effects it controls (hero glitch, scroll-shrink,
+   canvas backgrounds) run on content pages too, not just the intro/console. */
+.motion-toggle {
+  position: fixed;
+  right: clamp(1rem, 4vw, 2.5rem);
+  bottom: clamp(1rem, 4vw, 2.5rem);
+  z-index: 950;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6em 1.1em;
+  background: rgba(13, 18, 32, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  transition: color 220ms, border-color 220ms, background-color 220ms;
+}
+.motion-toggle:hover,
+.motion-toggle:focus-visible {
+  color: var(--accent);
+  border-color: var(--line-accent);
+  background: rgba(70, 230, 208, 0.07);
+}
+/* Pressed = animations OFF (reduced) — amber rather than cyan, so it
+   reads as "a setting is dialled down" rather than the site's normal
+   affirmative/active colour. */
+.motion-toggle[aria-pressed="true"] {
+  color: var(--amber);
+  border-color: var(--amber-glow);
+}
+
 
 /* ---------------------------------------------------------------------------
    07. CONSOLE SCREEN
@@ -1117,18 +1159,7 @@ button { font: inherit; color: inherit; }
 }
 .page__footer p:first-child { color: var(--text); }
 
-/* Understated build credit — smaller and dimmer than the rest of the
-   footer, so it reads as a footnote rather than part of the cover details.
-   (Selector is deliberately ".page__footer p.page__footer-note" so it
-   out-specifies the plain ".page__footer p" rule above without !important.) */
-.page__footer p.page__footer-note {
-  margin-top: 0.5em;
-  font-size: 0.7rem;
-  color: var(--text-faint);
-  letter-spacing: 0.02em;
-}
-
-/* Personal links — sits with the author details, ahead of the build note. */
+/* Personal links — sits with the author details at the bottom of the footer. */
 .page__footer p.page__footer-links {
   margin-top: 0.35em;
   display: flex;
@@ -1136,6 +1167,9 @@ button { font: inherit; color: inherit; }
   gap: 0.6em;
 }
 .page__footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
   color: var(--text-muted);
   text-decoration: none;
   border-bottom: 1px dotted transparent;
@@ -1147,6 +1181,17 @@ button { font: inherit; color: inherit; }
   border-bottom-color: currentColor;
 }
 .page__footer-links span { color: var(--text-faint); }
+
+/* Brand marks (LinkedIn/GitHub) next to the link text — inline SVG rather
+   than fetching each site's favicon, so there's no external request and no
+   dependency on either site staying up. currentColor means each icon
+   automatically matches its link's own colour, including on hover. */
+.page__footer-icon {
+  width: 0.95em;
+  height: 0.95em;
+  fill: currentColor;
+  flex-shrink: 0;
+}
 
 /* --- Return prompt -------------------------------------------------------- */
 .page__prompt {
@@ -1228,6 +1273,10 @@ button { font: inherit; color: inherit; }
   cursor: zoom-in;        /* clicking always opens the full-clarity lightbox, pinned or not */
   transform-origin: center center;
   will-change: transform;
+
+  /* Set by script.js (playHeroGlitch()) to the same image, so the ::before/
+     ::after ghost copies below have something to render. */
+  --glitch-src: none;
 }
 
 .hero__img {
@@ -1239,6 +1288,67 @@ button { font: inherit; color: inherit; }
   box-shadow:
     0 24px 70px -24px rgba(0, 0, 0, 0.85),
     0 0 42px rgba(70, 230, 208, 0.10);
+}
+
+/* Glitch-in: plays once whenever a hero page is freshly opened (triggered
+   by playHeroGlitch() in script.js, called from resetHero()).
+
+   Reads as a deliberate "digital glitch" rather than a rendering hiccup
+   because it's built the way real chromatic-aberration glitches actually
+   look: two colour-shifted copies of the same image (::before red-ish,
+   ::after cyan-ish, via mix-blend-mode: screen) punch outward from the
+   real image and snap back, while the real image itself does a couple of
+   sharp horizontal jumps. Only .hero__img and the ::before/::after ghosts
+   are animated here — never .hero__frame itself, whose transform is owned
+   frame-by-frame by the scroll-driven shrink effect (applyHero() in
+   script.js); animating the same property on the same element from two
+   places would have them fighting every scroll tick. */
+.hero__frame::before,
+.hero__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background-image: var(--glitch-src);
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.hero__frame::before { filter: sepia(1) saturate(8) hue-rotate(-58deg) brightness(1.15); }  /* red-ish ghost */
+.hero__frame::after  { filter: sepia(1) saturate(8) hue-rotate(148deg) brightness(1.15); }  /* cyan-ish ghost */
+
+.hero__frame.is-glitching .hero__img { animation: hero-glitch-img 640ms both; }
+.hero__frame.is-glitching::before    { animation: hero-glitch-ghost-r 640ms both; }
+.hero__frame.is-glitching::after     { animation: hero-glitch-ghost-c 640ms both; }
+
+@keyframes hero-glitch-img {
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateX(0); }
+  8%   { clip-path: inset(0 0 48% 0); opacity: 1; transform: translateX(-14px); }
+  18%  { clip-path: inset(22% 0 26% 0); transform: translateX(11px); }
+  30%  { clip-path: inset(0 0 6% 0); transform: translateX(-7px); }
+  44%  { clip-path: inset(0 0 0 0); transform: translateX(4px); }
+  60%  { transform: translateX(-2px); }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; transform: translateX(0); }
+}
+@keyframes hero-glitch-ghost-r {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0); }
+  8%   { opacity: 0.7; transform: translate3d(-16px, 3px, 0); }
+  20%  { opacity: 0.5; transform: translate3d(10px, -2px, 0); }
+  32%  { opacity: 0.55; transform: translate3d(-8px, 2px, 0); }
+  48%  { opacity: 0.25; transform: translate3d(4px, 0, 0); }
+  65%  { opacity: 0; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; }
+}
+@keyframes hero-glitch-ghost-c {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0); }
+  8%   { opacity: 0.7; transform: translate3d(16px, -3px, 0); }
+  20%  { opacity: 0.5; transform: translate3d(-10px, 2px, 0); }
+  32%  { opacity: 0.55; transform: translate3d(8px, -2px, 0); }
+  48%  { opacity: 0.25; transform: translate3d(-4px, 0, 0); }
+  65%  { opacity: 0; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; }
 }
 
 .hero__prompt {
@@ -1516,6 +1626,15 @@ button { font: inherit; color: inherit; }
   padding: clamp(3.5rem, 8vh, 5rem) clamp(1rem, 4vw, 3rem) clamp(2rem, 6vh, 4rem);
 }
 
+.hero-lightbox__img-wrap {
+  position: relative;
+  display: inline-block;
+  /* Set by script.js (openLightbox()) to the same image, so the ::before/
+     ::after ghost copies below have something to render — same technique
+     as .hero__frame's chromatic-aberration glitch. */
+  --glitch-src: none;
+}
+
 .hero-lightbox__img {
   width: min(760px, 92vw);
   height: auto;
@@ -1523,6 +1642,72 @@ button { font: inherit; color: inherit; }
   border-radius: 8px;
   border: 1px solid var(--line-accent);
   box-shadow: 0 0 70px rgba(70, 230, 208, 0.14);
+}
+
+/* Lightbox open/close glitch: the same chromatic-aberration ghost-copy
+   technique as the hero image (see .hero__frame::before/::after above),
+   just without needing to dodge a competing scroll-driven transform, so
+   the real image is free to jitter on translateX too. script.js toggles
+   these classes in openLightbox()/closeLightbox() and, for the close
+   direction, waits for the animation to finish before actually hiding the
+   overlay (see closeLightbox()'s setTimeout). */
+.hero-lightbox__img-wrap::before,
+.hero-lightbox__img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background-image: var(--glitch-src);
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.hero-lightbox__img-wrap::before { filter: sepia(1) saturate(8) hue-rotate(-58deg) brightness(1.15); }
+.hero-lightbox__img-wrap::after  { filter: sepia(1) saturate(8) hue-rotate(148deg) brightness(1.15); }
+
+.hero-lightbox__img-wrap.is-glitching-in .hero-lightbox__img { animation: lightbox-glitch-in-img 460ms both; }
+.hero-lightbox__img-wrap.is-glitching-in::before             { animation: lightbox-glitch-ghost-r 460ms both; }
+.hero-lightbox__img-wrap.is-glitching-in::after              { animation: lightbox-glitch-ghost-c 460ms both; }
+
+.hero-lightbox__img-wrap.is-glitching-out .hero-lightbox__img { animation: lightbox-glitch-out-img 280ms both; }
+.hero-lightbox__img-wrap.is-glitching-out::before              { animation: lightbox-glitch-ghost-r 280ms reverse both; }
+.hero-lightbox__img-wrap.is-glitching-out::after               { animation: lightbox-glitch-ghost-c 280ms reverse both; }
+
+@keyframes lightbox-glitch-in-img {
+  0%   { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateX(0); }
+  8%   { clip-path: inset(0 0 46% 0); opacity: 1; transform: translateX(-16px); }
+  20%  { clip-path: inset(24% 0 24% 0); transform: translateX(12px); }
+  32%  { clip-path: inset(0 0 5% 0); transform: translateX(-8px); }
+  48%  { clip-path: inset(0 0 0 0); transform: translateX(4px); }
+  65%  { transform: translateX(-2px); }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; transform: translateX(0); }
+}
+@keyframes lightbox-glitch-out-img {
+  0%   { clip-path: inset(0 0 0 0); opacity: 1; transform: translateX(0); }
+  25%  { clip-path: inset(0 0 6% 0); transform: translateX(9px); }
+  55%  { clip-path: inset(0 0 40% 0); transform: translateX(-11px); }
+  80%  { clip-path: inset(0 0 78% 0); transform: translateX(7px); opacity: 0.6; }
+  100% { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateX(0); }
+}
+@keyframes lightbox-glitch-ghost-r {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0); }
+  8%   { opacity: 0.75; transform: translate3d(-18px, 4px, 0); }
+  22%  { opacity: 0.5; transform: translate3d(12px, -3px, 0); }
+  36%  { opacity: 0.55; transform: translate3d(-9px, 2px, 0); }
+  55%  { opacity: 0.2; transform: translate3d(4px, 0, 0); }
+  75%  { opacity: 0; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; }
+}
+@keyframes lightbox-glitch-ghost-c {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0); }
+  8%   { opacity: 0.75; transform: translate3d(18px, -4px, 0); }
+  22%  { opacity: 0.5; transform: translate3d(-12px, 3px, 0); }
+  36%  { opacity: 0.55; transform: translate3d(9px, -2px, 0); }
+  55%  { opacity: 0.2; transform: translate3d(-4px, 0, 0); }
+  75%  { opacity: 0; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; }
 }
 
 .hero-lightbox__close {

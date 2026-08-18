@@ -687,9 +687,9 @@ button { font: inherit; color: inherit; }
   bottom: clamp(0.75rem, 3vw, 1.5rem);
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
-  color: var(--text-faint);
+  color: var(--text-muted);
 }
 
 
@@ -1311,6 +1311,22 @@ button { font: inherit; color: inherit; }
   font-family: var(--font-mono) !important;
   color: var(--accent) !important;
   letter-spacing: 0.04em;
+}
+
+/* Log-name prefix on the Summary page's three body lines (e.g. the
+   "data_breach.log" in "data_breach.log - sensitive data ..."): bold
+   off-white rather than --accent (used by headings) or --amber (used by
+   clickable data-cmd spans elsewhere), so it reads as a label without
+   being mistaken for either. Only wraps the log name itself, not the rest
+   of the sentence - which is why these three lines are [data-reveal]
+   rather than [data-typewriter]: typing only ever sets textContent (see
+   script.js Stage 1b), so a nested <strong> couldn't survive being typed
+   character-by-character. */
+.term-window__lognote {
+  font-family: var(--font-mono);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 /* The three "available logs", each one a clickable command. */

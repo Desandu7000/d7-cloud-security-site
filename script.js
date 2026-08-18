@@ -1301,7 +1301,7 @@
       '<span data-cmd="iam">iam</span> · ' +
       '<span data-cmd="malware">malware</span> · ' +
       '<span data-cmd="about">about</span> ' +
-      '— click a word or type it, either works';
+      '- click a word or type it, either works';
     el.feedback.classList.add('is-visible', 'is-info');
   }
 
@@ -1339,7 +1339,7 @@
     /* Unrecognised input — the feedback line is now reachable from any
        page (it travels with the bar, see relocateBar()), so this shows
        regardless of whether a page is open. */
-    showFeedback('command not recognised — try: data breach / iam / malware / about');
+    showFeedback('command not recognised - try: data breach / iam / malware / about');
   }
 
 

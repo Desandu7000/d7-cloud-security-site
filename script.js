@@ -15,16 +15,23 @@
    Web Audio API, so there's nothing to download and no licensing to worry
    about.
 
-   Starts muted: browsers block audio from playing before a user gesture
-   anyway, so the sound-toggle button IS that gesture — clicking it both
+   Muted by default unless a prior visit's preference says otherwise
+   (persisted to localStorage, not a cookie — nothing here is server-side,
+   so there's nothing a cookie would need to be sent to). Browsers block
+   audio from playing before a user gesture regardless of that preference,
+   so the sound switch's click IS that gesture — turning it on both
    creates/resumes the AudioContext and flips the mute flag in one action.
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  var soundBtn = document.getElementById('sound-toggle');
+  var STORAGE_KEY = 'd7-sound-on';
   var soundState = { ctx: null, muted: true };
+
+  try {
+    if (window.localStorage.getItem(STORAGE_KEY) === '1') { soundState.muted = false; }
+  } catch (e) { /* localStorage unavailable (e.g. private browsing) — default stands */ }
 
   function ensureAudioContext() {
     if (!soundState.ctx) {
@@ -71,19 +78,51 @@
     noise.stop(now + duration);
   }
 
-  if (soundBtn) {
-    soundBtn.addEventListener('click', function () {
-      var ctx = ensureAudioContext();
-      if (ctx && ctx.state === 'suspended') { ctx.resume(); }
+  function unlock() {
+    var ctx = ensureAudioContext();
+    if (ctx && ctx.state === 'suspended') { ctx.resume(); }
+  }
 
-      soundState.muted = !soundState.muted;
-      soundBtn.setAttribute('aria-pressed', String(!soundState.muted));
-      soundBtn.querySelector('[data-sound-label]').textContent = soundState.muted ? 'sound off' : 'sound on';
-      soundBtn.querySelector('.sound-toggle__icon').textContent = soundState.muted ? '\u{1F507}' : '\u{1F508}';
+  /* Two copies of this switch exist (the startup gate and the settings
+     page) — every element carrying [data-sound-toggle] is wired
+     identically here and kept in sync through updateSwitches(), so
+     clicking either one updates both, and each independently reflects the
+     one shared soundState. */
+  var soundBtns = Array.prototype.slice.call(document.querySelectorAll('[data-sound-toggle]'));
+
+  function updateSwitches() {
+    soundBtns.forEach(function (btn) {
+      btn.setAttribute('aria-checked', String(!soundState.muted));
     });
   }
 
-  window.D7Sound = { play: playKeySound };
+  function setMuted(muted) {
+    /* A switch flipped to "on" is itself a user gesture, so unlocking here
+       (rather than only remembering the preference) is what actually lets
+       audio play — see unlock() above. */
+    if (!muted) { unlock(); }
+    soundState.muted = muted;
+    try { window.localStorage.setItem(STORAGE_KEY, muted ? '0' : '1'); }
+    catch (e) { /* nothing to persist to — the toggle still works for this visit */ }
+    updateSwitches();
+  }
+
+  soundBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () { setMuted(!soundState.muted); });
+  });
+  updateSwitches();
+
+  window.D7Sound = {
+    play: playKeySound,
+    /* Called by the gate's Continue click (a guaranteed user gesture)
+       so that if sound was already on from a previous visit, this
+       session's AudioContext actually gets created/resumed — without it,
+       a returning visitor who never touches the switch would have "sound
+       on" silently do nothing all session. */
+    unlock: unlock,
+    get muted() { return soundState.muted; },
+    set: setMuted
+  };
 
 })();
 
@@ -102,15 +141,19 @@
    canvas backgrounds) are part of the actual design, not just flourish, so
    silently skipping them for anyone whose OS happens to have reduced-
    motion switched on would make the site look broken rather than considerate.
-   The choice is offered explicitly instead, via this button, and persisted
-   across visits once someone actually makes it.
+   The choice is offered explicitly instead, via this switch, and persisted
+   (to localStorage — see Stage 0's note on why not a cookie) across visits
+   once someone actually makes it.
    ========================================================================== */
 
 window.D7Motion = (function () {
   'use strict';
 
   var STORAGE_KEY = 'd7-reduce-motion';
-  var btn = document.getElementById('motion-toggle');
+  /* Two copies of this switch exist (the startup gate and the settings
+     page), both wired to this one shared state — same pattern as the
+     sound switch above. */
+  var btns = Array.prototype.slice.call(document.querySelectorAll('[data-motion-toggle]'));
   var state = { reduced: false };
 
   try {
@@ -118,20 +161,17 @@ window.D7Motion = (function () {
     if (saved === '1') { state.reduced = true; }
   } catch (e) { /* localStorage unavailable (e.g. private browsing) — default stands */ }
 
-  function updateButton() {
-    if (!btn) { return; }
-    btn.setAttribute('aria-pressed', String(state.reduced));
-    var label = btn.querySelector('[data-motion-label]');
-    if (label) { label.textContent = state.reduced ? 'animations off' : 'animations on'; }
-    var icon = btn.querySelector('.motion-toggle__icon');
-    if (icon) { icon.textContent = state.reduced ? '⏸' : '⚡'; }
+  function updateSwitches() {
+    btns.forEach(function (btn) {
+      btn.setAttribute('aria-checked', String(state.reduced));
+    });
   }
 
   function setReduced(value) {
     state.reduced = !!value;
     try { window.localStorage.setItem(STORAGE_KEY, state.reduced ? '1' : '0'); }
     catch (e) { /* nothing to persist to — the toggle still works for this visit */ }
-    updateButton();
+    updateSwitches();
     /* Every other stage checks window.D7Motion.reduced directly rather than
        listening for this — nothing currently needs to react mid-animation
        to a toggle, only at the start of the next one. Dispatched anyway in
@@ -139,15 +179,65 @@ window.D7Motion = (function () {
     document.dispatchEvent(new CustomEvent('d7motionchange', { detail: { reduced: state.reduced } }));
   }
 
-  if (btn) {
+  btns.forEach(function (btn) {
     btn.addEventListener('click', function () { setReduced(!state.reduced); });
-  }
-  updateButton();
+  });
+  updateSwitches();
 
   return {
     get reduced() { return state.reduced; },
     set: setReduced
   };
+})();
+
+
+/* ============================================================================
+   STAGE 0c: STARTUP GATE
+
+   Wires the #gate screen's Continue button. The intro (Stage 1, just below)
+   doesn't start itself — it exposes window.D7StartIntro instead and waits
+   for this module to call it, which only happens once someone dismisses
+   the gate. That's also why the sound/animation switches live here first,
+   ahead of the settings page: Continue's click is a real user gesture,
+   which is what actually lets the sound switch's AudioContext.resume()
+   succeed (see Stage 0 and D7Sound.unlock()) — waiting until someone found
+   the settings page on their own would mean the intro's first few
+   keystrokes played silently even with sound switched on.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  var gate = document.getElementById('gate');
+  var intro = document.getElementById('intro');
+  var continueBtn = document.getElementById('gate-continue');
+  if (!gate || !intro || !continueBtn) { return; }
+
+  var dismissed = false;
+
+  function dismissGate() {
+    if (dismissed) { return; }
+    dismissed = true;
+
+    gate.classList.remove('is-active');
+    intro.classList.add('is-active');
+
+    /* Guaranteed user gesture — unlocks the AudioContext so a "sound on"
+       preference carried over from a previous visit actually plays this
+       session too, not just a sound flipped on right here. */
+    if (window.D7Sound) { window.D7Sound.unlock(); }
+
+    if (window.D7StartIntro) { window.D7StartIntro(); }
+  }
+
+  continueBtn.addEventListener('click', dismissGate);
+
+  /* Enter anywhere on the gate also continues — matches the [enter] hint
+     printed on the button, and means someone tabbing through the toggles
+     doesn't have to tab all the way to Continue just to press it. */
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && gate.classList.contains('is-active')) { dismissGate(); }
+  });
 })();
 
 
@@ -193,6 +283,9 @@ window.D7Motion = (function () {
 
   /* Shared run-state for the intro. */
   var state = {
+    started:  false,   // true once playIntro() actually begins (see Stage 0c: the
+                        // gate defers this) — guards Esc/skip from firing while the
+                        // gate is still up, since #intro exists in the DOM the whole time
     aborted:  false,   // set to true by the skip button / Esc key
     finished: false,   // guards against the hand-off running twice
     wake:     null     // resolver used to cut a pending sleep() short
@@ -374,6 +467,8 @@ window.D7Motion = (function () {
   -------------------------------------------------------------------------- */
 
   async function playIntro() {
+    state.started = true;
+
     /* Reduced-motion path: show the finished state, hold briefly, move on. */
     if (prefersReducedMotion()) {
       bootLogInstant();
@@ -464,7 +559,7 @@ window.D7Motion = (function () {
      The short delay lets the completed title register for a beat rather than
      vanishing the instant the button is clicked, which felt abrupt. */
   function skipIntro() {
-    if (state.aborted || state.finished) { return; }
+    if (!state.started || state.aborted || state.finished) { return; }
     state.aborted = true;
 
     /* Cut short whatever pause or typing is currently in flight. */
@@ -495,9 +590,15 @@ window.D7Motion = (function () {
     moveCaretTo(el.lineMain.textContent ? el.lineMain : el.linePres);
   });
 
-  /* Lock scrolling for the duration of the intro and start the timeline. */
+  /* Lock scrolling for the gate + intro. The timeline itself doesn't start
+     here anymore — Stage 0c's gate holds it until Continue is clicked, so
+     that click can also be the user gesture the sound toggle's
+     AudioContext needs (see Stage 0). window.D7StartIntro is what Stage 0c
+     calls; the direct playIntro() call is only a fallback for the (should
+     never happen) case where #gate is missing from the page. */
   el.body.classList.add('is-locked');
-  playIntro();
+  window.D7StartIntro = playIntro;
+  if (!document.getElementById('gate')) { playIntro(); }
 
 })();
 
@@ -535,7 +636,6 @@ window.D7Motion = (function () {
     caret:     document.getElementById('console-caret'),
     feedback:  document.getElementById('console-feedback'),
     counter:   document.querySelector('[data-counter-value]'),
-    soundBtn:  document.getElementById('sound-toggle'),
     bar:       document.getElementById('console-bar'),
     topSlot:   document.getElementById('top-bar-slot'),
     pages:     Array.prototype.slice.call(document.querySelectorAll('.screen--page'))
@@ -607,7 +707,8 @@ window.D7Motion = (function () {
     databreach: ['data breach', 'databreach', 'breach'],
     iam:        ['iam', 'identity and access management', 'identity access management'],
     malware:    ['malware', 'ransomware', 'malware and ransomware'],
-    about:      ['about', 'references', 'refs', 'reference', 'summary']
+    about:      ['about', 'references', 'refs', 'reference', 'summary'],
+    settings:   ['settings', 'options', 'preferences']
   };
 
   /* NB: 'home' is deliberately NOT here — it used to be a synonym for
@@ -1264,10 +1365,6 @@ window.D7Motion = (function () {
     page.scrollTop = 0;
     clearFeedback();
 
-    /* No typing happens on a content page, so the sound toggle has nothing
-       to control here — hidden until showConsole() below brings it back. */
-    if (el.soundBtn) { el.soundBtn.setAttribute('hidden', ''); }
-
     /* Hand off to the Stage 3 background-animation module, if present.
        Defined as a separate IIFE further down the file, but since all of
        this file's IIFEs run synchronously on load, window.D7Backgrounds is
@@ -1380,10 +1477,6 @@ window.D7Motion = (function () {
        away, without forcing a click first. */
     el.input.focus();
 
-    /* The sound toggle is relevant again now that the command line is
-       back — un-hide it (a no-op if it was already visible). */
-    if (el.soundBtn) { el.soundBtn.removeAttribute('hidden'); }
-
     if (window.D7Backgrounds) { window.D7Backgrounds.stopAll(); }
   }
 
@@ -1420,7 +1513,8 @@ window.D7Motion = (function () {
       '<span data-cmd="data breach">data breach</span> · ' +
       '<span data-cmd="iam">iam</span> · ' +
       '<span data-cmd="malware">malware</span> · ' +
-      '<span data-cmd="about">about</span> ' +
+      '<span data-cmd="about">about</span> · ' +
+      '<span data-cmd="settings">settings</span> ' +
       '- click a word or type it, either works';
     el.feedback.classList.add('is-visible', 'is-info');
   }
@@ -1459,7 +1553,7 @@ window.D7Motion = (function () {
     /* Unrecognised input — the feedback line is now reachable from any
        page (it travels with the bar, see relocateBar()), so this shows
        regardless of whether a page is open. */
-    showFeedback('command not recognised - try: data breach / iam / malware / about');
+    showFeedback('command not recognised - try: data breach / iam / malware / about / settings');
   }
 
 
@@ -1487,7 +1581,7 @@ window.D7Motion = (function () {
      el.ghost (see the HTML/CSS) previews what Tab would do, before you
      press it — only shown when there's exactly one match, since a
      longest-common-prefix result isn't really "the" suggestion. */
-  var TAB_COMPLETIONS = ['home', 'data breach', 'iam', 'malware', 'about', 'back', 'help'];
+  var TAB_COMPLETIONS = ['home', 'data breach', 'iam', 'malware', 'about', 'settings', 'back', 'help'];
 
   function getCompletionMatches(value) {
     return TAB_COMPLETIONS.filter(function (word) { return word.indexOf(value) === 0; });

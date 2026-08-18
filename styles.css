@@ -220,6 +220,82 @@ button { font: inherit; color: inherit; }
 .screen--intro { transform: scale(1.06); transition-property: opacity, visibility, transform; }
 .screen--intro.is-active { transform: scale(1); }
 
+/* The gate is the very first thing shown, so it sits above even the intro
+   until script.js's gate-continue handler swaps .is-active over to #intro. */
+.screen--gate { z-index: 50; }
+.screen--gate.is-active { z-index: 60; }
+
+
+/* ---------------------------------------------------------------------------
+   05b. STARTUP GATE
+   Asks for sound/animation preferences (and gives Continue's click the
+   user gesture the AudioContext needs to unlock) before the intro plays,
+   rather than leaving people to discover the corner toggles mid-experience.
+--------------------------------------------------------------------------- */
+.gate__inner {
+  width: min(480px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  text-align: center;
+}
+.gate__brand {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.gate__title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  color: var(--text);
+  text-shadow: 0 0 24px var(--accent-glow);
+}
+.gate__lead {
+  margin: 0;
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+.gate__settings-hint {
+  font-family: var(--font-mono);
+  color: var(--amber);
+}
+.gate__options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+.gate__continue {
+  margin-top: 0.25rem;
+  padding: 0.75em 2.4em;
+  background: rgba(70, 230, 208, 0.1);
+  border: 1px solid var(--line-accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: background-color 200ms, box-shadow 200ms;
+}
+.gate__continue:hover,
+.gate__continue:focus-visible {
+  background: rgba(70, 230, 208, 0.18);
+  box-shadow: 0 0 26px var(--accent-glow);
+}
+.gate__continue-key {
+  margin-left: 0.5em;
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
 
 /* ---------------------------------------------------------------------------
    06. INTRO SCREEN
@@ -392,94 +468,117 @@ button { font: inherit; color: inherit; }
 .skip-btn__key { color: var(--text-faint); margin-left: 0.4em; }
 .skip-btn:hover .skip-btn__key { color: var(--accent-dim); }
 
-/* --- Typing-sound toggle --------------------------------------------------
-   Same pill styling as the skip button. Lives outside any single screen
-   (position: fixed, like .site-logo) so it stays usable across both places
-   typing happens — the intro and the console — rather than disappearing
-   once the intro hands off. script.js hides it while a content page is
-   open, since there's nothing to type there. */
-.sound-toggle {
-  position: fixed;
-  left: clamp(1rem, 4vw, 2.5rem);
-  bottom: clamp(1rem, 4vw, 2.5rem);
-  z-index: 950;
+/* --- Settings rows + switches ----------------------------------------------
+   Shared by #gate (the startup screen) and #page-settings — a labelled row
+   per preference (icon + title + one-line description) ending in a real
+   toggle switch, rather than a button whose own text had to double as its
+   own status readout. script.js wires every [data-sound-toggle]/
+   [data-motion-toggle] element to the shared D7Sound/D7Motion state, so the
+   gate's copy and the settings page's copy always agree. */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
+.settings-row {
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  padding: 0.6em 1.1em;
-  background: rgba(13, 18, 32, 0.72);
+  gap: 0.9rem;
+  padding: 0.85em 1.1em;
+  background: rgba(13, 18, 32, 0.55);
   border: 1px solid var(--line);
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
-
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  letter-spacing: 0.1em;
-  text-transform: lowercase;
-  color: var(--text-muted);
-
-  cursor: pointer;
-  transition: color 220ms, border-color 220ms, background-color 220ms;
-}
-.sound-toggle:hover,
-.sound-toggle:focus-visible {
-  color: var(--accent);
-  border-color: var(--line-accent);
-  background: rgba(70, 230, 208, 0.07);
-}
-/* `.sound-toggle`'s own `display: flex` above ties the browser default
-   `[hidden] { display: none }` rule on specificity, and — being ours,
-   declared later — wins the cascade, so script.js's setAttribute('hidden')
-   silently did nothing without this override forcing it back to none. */
-.sound-toggle[hidden] {
-  display: none;
-}
-.sound-toggle[aria-pressed="true"] {
-  color: var(--accent);
-  border-color: var(--line-accent);
+  border-radius: 6px;
+  text-align: left;
 }
 
-/* Reduce-animations toggle — same pill styling as .sound-toggle, mirrored
-   to the opposite (right) corner. Unlike .sound-toggle it's never hidden
-   by script.js: the effects it controls (hero glitch, scroll-shrink,
-   canvas backgrounds) run on content pages too, not just the intro/console. */
-.motion-toggle {
-  position: fixed;
-  right: clamp(1rem, 4vw, 2.5rem);
-  bottom: clamp(1rem, 4vw, 2.5rem);
-  z-index: 950;
-
+.settings-row__icon {
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  padding: 0.6em 1.1em;
-  background: rgba(13, 18, 32, 0.72);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(70, 230, 208, 0.08);
+  font-size: 1.05rem;
+}
 
+.settings-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.settings-row__title {
   font-family: var(--font-mono);
   font-size: var(--fs-small);
-  letter-spacing: 0.1em;
-  text-transform: lowercase;
-  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
 
+.settings-row__desc {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* The switch itself: a pill track with a knob that slides between the two
+   ends. role="switch" + aria-checked (set by script.js) is what makes this
+   a real accessible switch rather than a styled checkbox pretending. */
+.switch {
+  flex-shrink: 0;
+  position: relative;
+  width: 2.65rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
   cursor: pointer;
-  transition: color 220ms, border-color 220ms, background-color 220ms;
+  transition: background-color 200ms, border-color 200ms;
 }
-.motion-toggle:hover,
-.motion-toggle:focus-visible {
-  color: var(--accent);
+.switch:hover { border-color: var(--line-accent); }
+.switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.switch__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 200ms var(--ease-out), background-color 200ms;
+}
+
+/* Checked = sound on (cyan) — the site's normal affirmative colour. */
+.switch[data-sound-toggle][aria-checked="true"] {
+  background: rgba(70, 230, 208, 0.18);
   border-color: var(--line-accent);
-  background: rgba(70, 230, 208, 0.07);
 }
-/* Pressed = animations OFF (reduced) — amber rather than cyan, so it
-   reads as "a setting is dialled down" rather than the site's normal
-   affirmative/active colour. */
-.motion-toggle[aria-pressed="true"] {
-  color: var(--amber);
+.switch[data-sound-toggle][aria-checked="true"] .switch__knob {
+  transform: translateX(1.15rem);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Checked = animations reduced (amber) — "a setting is dialled down",
+   same colour logic the old button version used. */
+.switch[data-motion-toggle][aria-checked="true"] {
+  background: rgba(255, 180, 84, 0.16);
   border-color: var(--amber-glow);
+}
+.switch[data-motion-toggle][aria-checked="true"] .switch__knob {
+  transform: translateX(1.15rem);
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow);
 }
 
 
@@ -858,7 +957,7 @@ button { font: inherit; color: inherit; }
      script.js, which reserves the same band for the hero's pinned
      thumbnail for the same reason. */
   top: 82px;
-  z-index: 10;   /* above page content and the background canvas, below the fixed logo/sound-toggle (950) */
+  z-index: 10;   /* above page content and the background canvas, below the fixed logo (950) */
 
   display: flex;
   align-items: center;
@@ -1600,7 +1699,7 @@ button { font: inherit; color: inherit; }
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 970;   /* above the logo/sound-toggle (950), below nothing — this is the top layer */
+  z-index: 970;   /* above the logo (950), below nothing — this is the top layer */
 
   background: rgba(5, 7, 13, 0.96);
   backdrop-filter: blur(6px);
@@ -1749,7 +1848,7 @@ button { font: inherit; color: inherit; }
   display: none;   /* becomes flex under the max-width: 767px query below */
   position: fixed;
   inset: 0;
-  z-index: 9999;   /* above the logo/sound-toggle (950) and fx overlays (900s) */
+  z-index: 9999;   /* above the logo (950) and fx overlays (900s) */
 
   align-items: center;
   justify-content: center;
@@ -1872,14 +1971,6 @@ button { font: inherit; color: inherit; }
     right: 50%;
     transform: translateX(50%);
     bottom: 1.25rem;
-  }
-
-  /* Stack the sound toggle above it, also centred, so the two don't
-     collide once both are pinned to the same horizontal centre-line. */
-  .sound-toggle {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 4.25rem;
   }
 }
 

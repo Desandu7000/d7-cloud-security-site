@@ -31,7 +31,7 @@ The rubric said the three aspect pages shouldn't have in-text references (just b
 - Typing has a small clicking sound effect (like a keyboard), and there's a switch to turn that on or off, plus a switch to turn off the animations if someone doesn't want all the moving stuff. Both switches are on a "before we start" screen that shows up first, and there's also a `settings` command if you want to change them again later.
 - If your browser/OS says you prefer reduced motion, most of this still works the same, since the animation switch is a separate thing you control directly (I did this because a lot of these animations are actually part of the assignment marking, e.g. the infographic scroll effect, so I didn't want them to just silently turn off for some visitors without asking).
 - There's a print stylesheet so if you print the page (or print to PDF) from the Summary page it prints my references in a normal, readable black-and-white format instead of the dark terminal colours.
-- The site shows a "please use a bigger screen" message if the browser window is too narrow, since I didn't have time to make it fully mobile-friendly.
+- Works on phones too, not just desktop - the layout, the scrolling hero images, the glitch effect and the background animations all still work, just resized to fit a smaller screen.
 
 ---
 

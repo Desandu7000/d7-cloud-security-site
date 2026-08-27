@@ -33,7 +33,7 @@
 
   try {
     if (window.localStorage.getItem(STORAGE_KEY) === '1') { soundState.muted = false; }
-  } catch (e) { /* localStorage unavailable (e.g. private browsing) — default stands */ }
+  } catch (e) { /* localStorage unavailable (e.g. private browsing) - default stands */ }
 
   function ensureAudioContext() {
     if (!soundState.ctx) {
@@ -52,7 +52,7 @@
     var duration = 0.03;
 
     /* A short burst of noise, linearly faded to silence across its own
-       buffer, then band-passed — this reads as a dry "click" rather than
+       buffer, then band-passed - this reads as a dry "click" rather than
        the pure tone an oscillator alone would produce. */
     var bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
     var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -86,7 +86,7 @@
   }
 
   /* Two copies of this switch exist (the startup gate and the settings
-     page) — every element carrying [data-sound-toggle] is wired
+     page) - every element carrying [data-sound-toggle] is wired
      identically here and kept in sync through updateSwitches(), so
      clicking either one updates both, and each independently reflects the
      one shared soundState. */
@@ -101,11 +101,11 @@
   function setMuted(muted) {
     /* A switch flipped to "on" is itself a user gesture, so unlocking here
        (rather than only remembering the preference) is what actually lets
-       audio play — see unlock() above. */
+       audio play - see unlock() above. */
     if (!muted) { unlock(); }
     soundState.muted = muted;
     try { window.localStorage.setItem(STORAGE_KEY, muted ? '0' : '1'); }
-    catch (e) { /* nothing to persist to — the toggle still works for this visit */ }
+    catch (e) { /* nothing to persist to - the toggle still works for this visit */ }
     updateSwitches();
   }
 
@@ -118,7 +118,7 @@
     play: playKeySound,
     /* Called by the gate's Continue click (a guaranteed user gesture)
        so that if sound was already on from a previous visit, this
-       session's AudioContext actually gets created/resumed — without it,
+       session's AudioContext actually gets created/resumed - without it,
        a returning visitor who never touches the switch would have "sound
        on" silently do nothing all session. */
     unlock: unlock,
@@ -153,7 +153,7 @@ window.D7Motion = (function () {
 
   var STORAGE_KEY = 'd7-reduce-motion';
   /* Two copies of this switch exist (the startup gate and the settings
-     page), both wired to this one shared state — same pattern as the
+     page), both wired to this one shared state - same pattern as the
      sound switch above. */
   var btns = Array.prototype.slice.call(document.querySelectorAll('[data-motion-toggle]'));
   var state = { reduced: false };
@@ -161,7 +161,7 @@ window.D7Motion = (function () {
   try {
     var saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved === '1') { state.reduced = true; }
-  } catch (e) { /* localStorage unavailable (e.g. private browsing) — default stands */ }
+  } catch (e) { /* localStorage unavailable (e.g. private browsing) - default stands */ }
 
   function updateSwitches() {
     btns.forEach(function (btn) {
@@ -172,10 +172,10 @@ window.D7Motion = (function () {
   function setReduced(value) {
     state.reduced = !!value;
     try { window.localStorage.setItem(STORAGE_KEY, state.reduced ? '1' : '0'); }
-    catch (e) { /* nothing to persist to — the toggle still works for this visit */ }
+    catch (e) { /* nothing to persist to - the toggle still works for this visit */ }
     updateSwitches();
     /* Every other stage checks window.D7Motion.reduced directly rather than
-       listening for this — nothing currently needs to react mid-animation
+       listening for this - nothing currently needs to react mid-animation
        to a toggle, only at the start of the next one. Dispatched anyway in
        case that changes later. */
     document.dispatchEvent(new CustomEvent('d7motionchange', { detail: { reduced: state.reduced } }));
@@ -226,7 +226,7 @@ window.D7Motion = (function () {
     gate.classList.remove('is-active');
     intro.classList.add('is-active');
 
-    /* Guaranteed user gesture — unlocks the AudioContext so a "sound on"
+    /* Guaranteed user gesture - unlocks the AudioContext so a "sound on"
        preference carried over from a previous visit actually plays this
        session too, not just a sound flipped on right here. */
     if (window.D7Sound) { window.D7Sound.unlock(); }
@@ -236,7 +236,7 @@ window.D7Motion = (function () {
 
   continueBtn.addEventListener('click', dismissGate);
 
-  /* Enter anywhere on the gate also continues — matches the [enter] hint
+  /* Enter anywhere on the gate also continues - matches the [enter] hint
      printed on the button, and means someone tabbing through the toggles
      doesn't have to tab all the way to Continue just to press it. */
   document.addEventListener('keydown', function (event) {
@@ -289,7 +289,7 @@ window.D7Motion = (function () {
   /* Shared run-state for the intro. */
   var state = {
     started:  false,   // true once playIntro() actually begins (see Stage 0c: the
-                        // gate defers this) — guards Esc/skip from firing while the
+                        // gate defers this) - guards Esc/skip from firing while the
                         // gate is still up, since #intro exists in the DOM the whole time
     aborted:  false,   // set to true by the skip button / Esc key
     finished: false,   // guards against the hand-off running twice
@@ -322,7 +322,7 @@ window.D7Motion = (function () {
   /* True when the visitor's operating system is set to "reduce motion".
      We honour it by playing the intro instantly instead of animating it. */
   function prefersReducedMotion() {
-    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+    /* Manual toggle only (see Stage 0b) - deliberately doesn't also check
        the OS-level prefers-reduced-motion media query, since several of
        this site's animations are the design, not just flourish; the
        choice is offered explicitly via the button instead of inferred. */
@@ -482,7 +482,7 @@ window.D7Motion = (function () {
       el.lineMain.textContent = TEXT_MAIN;
       el.sub.classList.add('is-visible');
       hideCaret();
-      /* The sound toggle stays available even here — it still controls the
+      /* The sound toggle stays available even here - it still controls the
          console's own typing sound once the hand-off below completes. */
       await sleep(1800);
       enterConsole();
@@ -490,31 +490,31 @@ window.D7Motion = (function () {
     }
 
     try {
-      /* Beat 1 — system boots. */
+      /* Beat 1 - system boots. */
       await sleep(400);         checkpoint();
       await playBootLog();      checkpoint();
       await sleep(420);         checkpoint();
 
-      /* Beat 2 — boot log recedes, the title takes the stage. */
+      /* Beat 2 - boot log recedes, the title takes the stage. */
       el.bootLog.classList.add('is-dimmed');
       await sleep(260);         checkpoint();
 
-      /* Beat 3 — type "D7 presents:" */
+      /* Beat 3 - type "D7 presents:" */
       await typeInto(el.linePres, TEXT_PRESENTS, 55);
       checkpoint();
       await sleep(520);         checkpoint();   /* deliberate pause for weight */
 
-      /* Beat 4 — type the main title, a little faster. */
+      /* Beat 4 - type the main title, a little faster. */
       await typeInto(el.lineMain, TEXT_MAIN, 42);
       checkpoint();
       await sleep(300);         checkpoint();
 
-      /* Beat 5 — caret away, subtitle and rule fade in. */
+      /* Beat 5 - caret away, subtitle and rule fade in. */
       hideCaret();
       el.sub.classList.add('is-visible');
       await sleep(1500);        checkpoint();
 
-      /* Beat 6 — dissolve into the console. */
+      /* Beat 6 - dissolve into the console. */
       enterConsole();
 
     } catch (err) {
@@ -539,12 +539,12 @@ window.D7Motion = (function () {
     el.console.classList.add('is-active');
 
     /* Retire the skip button: hidden AND removed from the tab order. The
-       sound toggle stays up — it also controls the console's typing
+       sound toggle stays up - it also controls the console's typing
        sound now, and Stage 2's router takes over managing its visibility
        from here (shown on the console, hidden on content pages). */
     el.skipBtn.setAttribute('hidden', '');
 
-    /* Reveal the site logo — it lives outside both screens and stays up
+    /* Reveal the site logo - it lives outside both screens and stays up
        for the rest of the session, so this is the one place it turns on. */
     var logo = document.getElementById('site-logo');
     if (logo) { logo.classList.add('is-visible'); }
@@ -583,7 +583,7 @@ window.D7Motion = (function () {
 
   el.skipBtn.addEventListener('click', skipIntro);
 
-  /* Esc also skips — matches the "[esc]" hint printed on the button. */
+  /* Esc also skips - matches the "[esc]" hint printed on the button. */
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && !state.finished) { skipIntro(); }
   });
@@ -596,7 +596,7 @@ window.D7Motion = (function () {
   });
 
   /* Lock scrolling for the gate + intro. The timeline itself doesn't start
-     here anymore — Stage 0c's gate holds it until Continue is clicked, so
+     here anymore - Stage 0c's gate holds it until Continue is clicked, so
      that click can also be the user gesture the sound toggle's
      AudioContext needs (see Stage 0). window.D7StartIntro is what Stage 0c
      calls; the direct playIntro() call is only a fallback for the (should
@@ -654,14 +654,14 @@ window.D7Motion = (function () {
   var commandCount = 0;    // every recognised command, including "back"
 
   /* #console-bar's original spot, remembered once up front so it can be
-     moved back exactly where it came from — see relocateBar() below. */
+     moved back exactly where it came from - see relocateBar() below. */
   var barHome = {
     parent: el.bar ? el.bar.parentNode : null,
     next:   el.bar ? el.bar.nextSibling : null
   };
 
-  /* Physically moves #console-bar — the actual form/ghost/caret/feedback
-     element, not a copy — between the console's own layout and the fixed
+  /* Physically moves #console-bar - the actual form/ghost/caret/feedback
+     element, not a copy - between the console's own layout and the fixed
      top slot used on content pages. Because it's the same DOM node, every
      event listener and all the ghost/caret/tab-completion state already
      wired to it keeps working with no extra setup after the move. */
@@ -679,7 +679,7 @@ window.D7Motion = (function () {
     }
 
     /* .console-bar--pinned shrinks the input's font-size (see styles.css),
-       which the caret-tracking mirror doesn't know about on its own —
+       which the caret-tracking mirror doesn't know about on its own -
        without this, the caret would keep measuring against the OLD font
        metrics after a relocation and drift out of alignment. These are
        defined further down but hoisted, so calling them here is safe. */
@@ -690,7 +690,7 @@ window.D7Motion = (function () {
   }
 
   /* Original full text of every [data-typewriter] element, captured once
-     up front — before script.js ever clears any of them for typing —
+     up front - before script.js ever clears any of them for typing -
      so re-typing on a later visit always has the real source text
      regardless of whatever partial/empty state the DOM is currently in. */
   var TYPEWRITER_TEXT = new Map();
@@ -716,7 +716,7 @@ window.D7Motion = (function () {
     settings:   ['settings', 'options', 'preferences']
   };
 
-  /* NB: 'home' is deliberately NOT here — it used to be a synonym for
+  /* NB: 'home' is deliberately NOT here - it used to be a synonym for
      "return to console", but it now routes to the actual Home page (see
      ROUTES above), and resolveCommand() checks this list first. */
   var BACK_WORDS = ['back', 'console', 'exit', 'menu'];
@@ -726,7 +726,7 @@ window.D7Motion = (function () {
      (see styles.css section 10), so showConsole() skips its matching JS
      delay too rather than sitting on a blank-looking page for no reason. */
   function prefersReducedMotion() {
-    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+    /* Manual toggle only (see Stage 0b) - deliberately doesn't also check
        the OS-level prefers-reduced-motion media query, since several of
        this site's animations are the design, not just flourish; the
        choice is offered explicitly via the button instead of inferred. */
@@ -760,33 +760,33 @@ window.D7Motion = (function () {
        - [data-typewriter]: a heading or paragraph, typed in character-by-
          character and erased the same way in reverse.
        - [data-reveal]: plain content a character typewriter can't sensibly
-         type into — the video card, a bullet-point summary list, or (on
+         type into - the video card, a bullet-point summary list, or (on
          the Summary page) the entire reference section, which contains
          real <em>/<a> markup that typing would have to tear apart and
          rebuild. These fade in/out as a whole block instead, via the
          .is-typed-in class (styled in styles.css), added/removed at
-         exactly the right point in the sequence — which is the reason
+         exactly the right point in the sequence - which is the reason
          this needs to be a single ordered walk rather than "type
          everything, then reveal the extras" (an earlier version of this
-         only ever had ONE non-typed block, always last — the video — so
+         only ever had ONE non-typed block, always last - the video - so
          that shortcut worked; a bullet list or reference section can sit
          in the MIDDLE of the sequence, and needs to wait for whatever
          precedes it to actually finish typing, which takes a variable,
          not-known-in-advance amount of time, before it appears).
 
-     Silent on purpose — see the STAGE 0 comment above for why this doesn't
+     Silent on purpose - see the STAGE 0 comment above for why this doesn't
      use window.D7Sound like the intro/console do.
 
      Structurally this mirrors the intro's own abortable-sleep pattern
-     (Stage 1) closely — same shape, just walking N sequential blocks
+     (Stage 1) closely - same shape, just walking N sequential blocks
      instead of typing one title, and reused for both directions (typing
      in AND erasing out) via one shared abort state, since the two never
      overlap for a given page.
   -------------------------------------------------------------------------- */
 
-  var TYPE_SPEED   = 9;    // ms/char, base (before jitter) — typing in
-  var ERASE_SPEED  = 8;    // ms per tick — erasing out
-  var ERASE_CHUNK  = 8;    // characters removed per erase tick — leaving should read as quick
+  var TYPE_SPEED   = 9;    // ms/char, base (before jitter) - typing in
+  var ERASE_SPEED  = 8;    // ms per tick - erasing out
+  var ERASE_CHUNK  = 8;    // characters removed per erase tick - leaving should read as quick
   var WINDOW_REVEAL_MS = 900;   // matches the term-window's own CSS fade-in timing
 
   /* This bit took me a while to get right. At first I just had one
@@ -823,12 +823,12 @@ window.D7Motion = (function () {
   function typeCheckpoint(token) { if (!isCurrent(token)) { throw TYPE_ABORT; } }
 
   /* Every [data-typewriter] or [data-reveal] element inside the body, in
-     DOM order — the full sequence runPageTypeIn()/runPageEraseOut() walk.
+     DOM order - the full sequence runPageTypeIn()/runPageEraseOut() walk.
      querySelectorAll rather than direct-children-only deliberately: Home's
      opening paragraph sits nested inside a wrapper div (alongside its
      accompanying image, see .welcome-lead), not as a direct child of the
      body, and still needs to be found. This stays safe for [data-reveal]
-     blocks that themselves contain ordinary markup — the Summary page's
+     blocks that themselves contain ordinary markup - the Summary page's
      reference section wraps a heading and several citation entries, none
      of which carry either attribute themselves, so they're simply never
      matched and the whole section is walked as the one block it's meant
@@ -848,7 +848,7 @@ window.D7Motion = (function () {
      No sound is played here (unlike the intro's typewriter and the
      console's input): at this speed, over a whole paragraph, the clicks
      overlapped into a noisy blur rather than reading as discrete
-     keystrokes — the visual type-in is kept, the audio just isn't worth
+     keystrokes - the visual type-in is kept, the audio just isn't worth
      it at this density. */
   function typeElementText(el, speed, token) {
     var fullText = TYPEWRITER_TEXT.get(el) || '';
@@ -873,7 +873,7 @@ window.D7Motion = (function () {
 
   /* Erases `el`'s current text down to empty, a few characters at a time.
      Operates on whatever text is currently there, whether that's the
-     fully typed paragraph or something the user interrupted mid-type —
+     fully typed paragraph or something the user interrupted mid-type -
      either is fine to erase from. No sound here either, for the same
      reason typeElementText() above has none. */
   function eraseElementText(el, speed, chunk, token) {
@@ -896,7 +896,7 @@ window.D7Motion = (function () {
   /* --- Type-in (the page's "intro") --------------------------------------
      Fire-and-forget from showPage(): resets every sequenced block, waits
      for the term-window's own fade-in to finish, then walks the sequence
-     in order — typing [data-typewriter] blocks character-by-character,
+     in order - typing [data-typewriter] blocks character-by-character,
      fading [data-reveal] blocks in as a whole once their turn comes.
      Reduced motion skips straight to the finished state. */
   async function runPageTypeIn(page) {
@@ -942,7 +942,7 @@ window.D7Motion = (function () {
     }
   }
 
-  /* Instantly completes whatever's currently typing — the "click to skip"
+  /* Instantly completes whatever's currently typing - the "click to skip"
      affordance (see the document click listener further down), and also
      called defensively at the start of leaving a typed page (see
      showConsole()) to guarantee any in-flight type-in is fully stopped
@@ -964,7 +964,7 @@ window.D7Motion = (function () {
 
   /* --- Erase-out (the page's "outro") -------------------------------------
      Called from showConsole()'s outro handling. Walks the sequence in
-     REVERSE — last block first, up to the heading — so it reads as
+     REVERSE - last block first, up to the heading - so it reads as
      "closing from the bottom", the mirror image of typing in. */
   async function runPageEraseOut(page) {
     var items = getSequenceItems(page);
@@ -996,7 +996,7 @@ window.D7Motion = (function () {
     }
   }
 
-  /* Instantly finishes erasing — the "skip" side of leaving a page, fired
+  /* Instantly finishes erasing - the "skip" side of leaving a page, fired
      by a second Esc/back while the outro is already running. */
   function skipPageEraseOut(page) {
     beginSequence();
@@ -1017,8 +1017,8 @@ window.D7Motion = (function () {
 
      The whole effect is one number: `p`, the scroll progress from 0 (image
      full size, content hidden) to 1 (image pinned small, content readable).
-     Everything else — the image's transform, the backdrop bar's opacity,
-     the content's fade — is derived from `p`, which keeps the forward and
+     Everything else - the image's transform, the backdrop bar's opacity,
+     the content's fade - is derived from `p`, which keeps the forward and
      reverse directions automatically symmetrical: scrolling back up runs
      the identical maths in reverse, no separate "undo" path to keep in
      sync.
@@ -1036,7 +1036,7 @@ window.D7Motion = (function () {
   var PIN_MAX_W = 190;
   /* Clears the persistent pinned command bar (.console-bar--pinned in
      styles.css), which now occupies roughly the same top band on every
-     content page — matches .term-window__bar's sticky `top` for the same
+     content page - matches .term-window__bar's sticky `top` for the same
      reason. The bar itself measures ~72px tall (12px top offset + ~60px
      height); 82 leaves a clean ~10px gap rather than the two edges
      touching or overlapping. */
@@ -1070,13 +1070,13 @@ window.D7Motion = (function () {
 
   function clamp01(n) { return n < 0 ? 0 : (n > 1 ? 1 : n); }
 
-  /* Smoothstep — eases both ends so the image doesn't jerk into motion the
+  /* Smoothstep - eases both ends so the image doesn't jerk into motion the
      instant the wheel moves, nor slam to a stop when it lands pinned. */
   function smoothstep(t) { return t * t * (3 - 2 * t); }
 
   function applyHero(hero, p) {
     var img = hero.img;
-    /* offsetWidth/Height are the *untransformed* layout size — exactly what
+    /* offsetWidth/Height are the *untransformed* layout size - exactly what
        we need, since the transform below is expressed relative to it. */
     var w = img.offsetWidth;
     var h = img.offsetHeight;
@@ -1100,7 +1100,7 @@ window.D7Motion = (function () {
       'translate3d(0, ' + dy.toFixed(2) + 'px, 0) scale(' + scale.toFixed(4) + ')';
 
     if (hero.bar) { hero.bar.style.opacity = e.toFixed(3); }
-    /* Prompt clears early — it's stale advice the moment scrolling starts. */
+    /* Prompt clears early - it's stale advice the moment scrolling starts. */
     if (hero.prompt) { hero.prompt.style.opacity = (1 - clamp01(p * 2.6)).toFixed(3); }
 
     /* Content trails the image: it only starts fading up once the image is
@@ -1112,7 +1112,7 @@ window.D7Motion = (function () {
     /* Invisible content shouldn't be clickable. */
     hero.inner.style.pointerEvents = cp < 0.1 ? 'none' : 'auto';
 
-    /* Start typing once the text is actually on its way in — not on page
+    /* Start typing once the text is actually on its way in - not on page
        open, which would have it finish unseen behind the full-size image. */
     if (!hero.typed && p > 0.4) {
       hero.typed = true;
@@ -1130,12 +1130,12 @@ window.D7Motion = (function () {
     applyHero(hero, clamp01(hero.section.scrollTop / heroScrollRange(hero)));
   }
 
-  /* Reduced motion: no scroll choreography at all — open straight into the
+  /* Reduced motion: no scroll choreography at all - open straight into the
      pinned/readable end state, matching how the intro and the canvases
      handle the same preference. */
   function heroIsStatic() { return prefersReducedMotion(); }
 
-  /* Restarts a CSS glitch animation on `el` — removes the class, forces a
+  /* Restarts a CSS glitch animation on `el` - removes the class, forces a
      reflow so the browser notices it's gone, re-adds it, then clears it
      again after `duration` (a plain timeout rather than 'animationend':
      simpler, and immune to an animationend that never fires if the class
@@ -1152,7 +1152,7 @@ window.D7Motion = (function () {
 
   /* The chromatic-aberration ghost copies (see styles.css .hero__frame::
      before/::after) render whatever --glitch-src currently points at, so
-     it has to be (re)pointed at this hero's own image before each glitch —
+     it has to be (re)pointed at this hero's own image before each glitch -
      otherwise a page opened before its image's first load, or opened a
      second time, could flash a stale or blank ghost. */
   function playHeroGlitch(hero) {
@@ -1162,7 +1162,7 @@ window.D7Motion = (function () {
   }
 
   /* --- Lightbox --------------------------------------------------------
-     Clicking the hero image — pinned or full-size, doesn't matter — opens
+     Clicking the hero image - pinned or full-size, doesn't matter - opens
      it full-screen and scrollable. This exists because the shrink effect
      alone isn't enough for a tall infographic: even at "full size" the
      hero is capped to 74vh (see .hero__img), which for a portrait image
@@ -1209,7 +1209,7 @@ window.D7Motion = (function () {
       lightbox.setAttribute('aria-hidden', 'true');
       if (lightboxWrap) { lightboxWrap.classList.remove('is-glitching-out'); }
       /* Return focus to whatever opened it, for keyboard/screen-reader users
-         — otherwise focus is left on a now-hidden close button. */
+         - otherwise focus is left on a now-hidden close button. */
       if (lightboxOpener) { lightboxOpener.focus({ preventScroll: true }); }
       lightboxOpener = null;
     }
@@ -1226,7 +1226,7 @@ window.D7Motion = (function () {
   if (lightboxClose) { lightboxClose.addEventListener('click', closeLightbox); }
 
   /* Clicking the backdrop (anywhere in the scroll area that isn't the
-     image itself) closes it too — the image is the only other direct
+     image itself) closes it too - the image is the only other direct
      child, so target === lightboxScroll reliably means "missed it". */
   if (lightboxScroll) {
     lightboxScroll.addEventListener('click', function (event) {
@@ -1262,7 +1262,7 @@ window.D7Motion = (function () {
     }
   });
 
-  /* Called by showPage() — puts a hero page back into its opening state. */
+  /* Called by showPage() - puts a hero page back into its opening state. */
   function resetHero(hero) {
     hero.typed = false;
 
@@ -1281,7 +1281,7 @@ window.D7Motion = (function () {
        this, but it doesn't reliably stick: the browser restores a scroll
        container's previous offset itself, and for a container that was
        visibility:hidden until a moment ago that restore can land *after*
-       showPage has run — which opened the page already scrolled, so the
+       showPage has run - which opened the page already scrolled, so the
        hero appeared pre-shrunk instead of full size. Re-asserting here,
        and again on the next frame, wins against that late restore.
        (history.scrollRestoration is also set to 'manual' at the bottom of
@@ -1297,7 +1297,7 @@ window.D7Motion = (function () {
   }
 
   /* This site is a single document whose "pages" are shown by toggling
-     classes, so there is never a meaningful scroll offset worth restoring —
+     classes, so there is never a meaningful scroll offset worth restoring -
      and letting the browser restore one actively breaks the hero's opening
      state (see resetHero above). */
   if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
@@ -1320,8 +1320,8 @@ window.D7Motion = (function () {
     el.console.classList.remove('is-active');
 
     /* Retire whichever page is currently open before opening the new one.
-       This used to be impossible — every page was entered from the console,
-       so there was never another page to close — but the Home page links
+       This used to be impossible - every page was entered from the console,
+       so there was never another page to close - but the Home page links
        straight to the three log pages, which makes page-to-page navigation
        reachable for the first time. Without this both pages end up carrying
        .is-active and render stacked on top of each other.
@@ -1348,7 +1348,7 @@ window.D7Motion = (function () {
     page.classList.add('is-active');
     activePage = page;
 
-    /* Pin the command bar to the top for this page — see relocateBar()
+    /* Pin the command bar to the top for this page - see relocateBar()
        and the HTML comment above #console-bar. Safe to call even when
        already pinned (moving between two content pages): relocateBar()
        no-ops the DOM move when the bar's already in the target slot. */
@@ -1376,7 +1376,7 @@ window.D7Motion = (function () {
       window.D7Backgrounds.start(pageId);
     }
 
-    /* The page's text "intro" — fire-and-forget; runPageTypeIn() is a no-op
+    /* The page's text "intro" - fire-and-forget; runPageTypeIn() is a no-op
        on the references page (isTypedPage() is false there), which keeps
        its existing CSS fade-stagger untouched.
 
@@ -1391,7 +1391,7 @@ window.D7Motion = (function () {
   }
 
   var OUTRO_MS = 260;      /* CSS-only outro duration (the references page) */
-  var isLeaving = false;   /* an outro — either kind — is currently running */
+  var isLeaving = false;   /* an outro - either kind - is currently running */
   var pageBeingClosed = null;
   var cssOutroTimer = null;
 
@@ -1400,7 +1400,7 @@ window.D7Motion = (function () {
          out (runPageEraseOut, variable duration)
        - the references page keeps the original CSS-only fade (OUTRO_MS)
      A second Esc/back/logo-click while either is already running skips
-     straight through instead of queuing a second one — see skipOutro(). */
+     straight through instead of queuing a second one - see skipOutro(). */
   function showConsole() {
     if (isLeaving) { skipOutro(); return; }
     if (!activePage) { finishShowConsole(); return; }
@@ -1411,7 +1411,7 @@ window.D7Motion = (function () {
 
     if (isTypedPage(pageBeingClosed)) {
       /* Deliberately NOT adding .is-leaving here. That class fades the
-         whole term-window box to invisible in ~240ms (see styles.css) —
+         whole term-window box to invisible in ~240ms (see styles.css) -
          fine for the references page's instant CSS outro below, but for a
          typed page the character erase running underneath takes much
          longer than 240ms, so the box would vanish almost immediately and
@@ -1424,7 +1424,7 @@ window.D7Motion = (function () {
       /* If the page is still mid-type-in when the user leaves, force it to
          its finished state FIRST. Without this, runPageTypeIn()'s pending
          timers would keep running concurrently with the erase sequence
-         below — both fighting over the same shared typeState.wake and the
+         below - both fighting over the same shared typeState.wake and the
          same elements' textContent at once. skipPageTypeIn() is a no-op
          (besides an idempotent full-text fill) if typing had already
          finished naturally, so this is always safe to call. */
@@ -1445,7 +1445,7 @@ window.D7Motion = (function () {
       /* Forces the erase to its finished state; runPageEraseOut()'s promise
          (already chained to finalizeOutro via .then in showConsole above)
          resolves naturally right after this, so finalizeOutro is NOT
-         called here directly — that would run it twice. */
+         called here directly - that would run it twice. */
       skipPageEraseOut(pageBeingClosed);
     } else if (cssOutroTimer) {
       clearTimeout(cssOutroTimer);
@@ -1466,7 +1466,7 @@ window.D7Motion = (function () {
     el.console.classList.add('is-active');
 
     /* Move the command bar back into its normal centred spot in the
-       console layout — the mirror image of showPage()'s relocateBar(true). */
+       console layout - the mirror image of showPage()'s relocateBar(true). */
     relocateBar(false);
 
     el.input.value = '';
@@ -1490,7 +1490,7 @@ window.D7Motion = (function () {
     el.feedback.classList.remove('is-visible', 'is-info');
   }
 
-  /* Unrecognised-command warning — amber, via the default .console__feedback
+  /* Unrecognised-command warning - amber, via the default .console__feedback
      colour (see styles.css). */
   function showFeedback(message) {
     el.feedback.textContent = message;
@@ -1498,11 +1498,11 @@ window.D7Motion = (function () {
     el.feedback.classList.add('is-visible');
   }
 
-  /* "help" response — same line, but cyan/informational rather than a
+  /* "help" response - same line, but cyan/informational rather than a
      warning (.is-info overrides the default amber). */
   /* The response is built as HTML (not textContent) so each command is a
      real clickable [data-cmd] word, same as the hint line and every page's
-     "back" prompt — the existing document-level click listener further
+     "back" prompt - the existing document-level click listener further
      down already handles these for free, nothing extra to wire up. Safe to
      use innerHTML here since every character comes from this fixed string,
      never from the user's own input. */
@@ -1530,8 +1530,8 @@ window.D7Motion = (function () {
     if (result === 'BACK') {
       /* isLeaving as well as activePage: activePage is nulled the instant
          an outro starts (see showConsole()), so without this a second
-         "back" fired mid-outro — clicking the logo or the prompt's "back"
-         word again — would silently do nothing instead of reaching
+         "back" fired mid-outro - clicking the logo or the prompt's "back"
+         word again - would silently do nothing instead of reaching
          showConsole()'s own skip-the-outro handling. */
       if (activePage || isLeaving) { showConsole(); }
       return;
@@ -1539,7 +1539,7 @@ window.D7Motion = (function () {
 
     if (result === 'HELP') {
       /* #console-feedback travels with #console-bar (see relocateBar()),
-         so this shows in the right place automatically — no navigation
+         so this shows in the right place automatically - no navigation
          needed even when triggered from a content page. */
       showHelp();
       return;
@@ -1550,7 +1550,7 @@ window.D7Motion = (function () {
       return;
     }
 
-    /* Unrecognised input — the feedback line is now reachable from any
+    /* Unrecognised input - the feedback line is now reachable from any
        page (it travels with the bar, see relocateBar()), so this shows
        regardless of whether a page is open. */
     showFeedback('command not recognised - try: data breach / iam / malware / about / settings');
@@ -1571,7 +1571,7 @@ window.D7Motion = (function () {
 
   /* Tab-completion, like a real shell: partial "mal" + Tab -> "malware".
      Completes against the primary command words shown in the hint line
-     (not every alias — completing to a word the user can actually see
+     (not every alias - completing to a word the user can actually see
      listed is what makes this discoverable rather than a guessing game).
      Multiple matches complete to their longest common prefix instead of
      doing nothing; with this small a command set that's rare in practice
@@ -1579,7 +1579,7 @@ window.D7Motion = (function () {
      reasonable fallback if the list ever grows.
 
      el.ghost (see the HTML/CSS) previews what Tab would do, before you
-     press it — only shown when there's exactly one match, since a
+     press it - only shown when there's exactly one match, since a
      longest-common-prefix result isn't really "the" suggestion. */
   var TAB_COMPLETIONS = ['home', 'data breach', 'iam', 'malware', 'about', 'settings', 'back', 'help'];
 
@@ -1605,7 +1605,7 @@ window.D7Motion = (function () {
     if (!value) { el.ghost.textContent = ''; return; }
 
     var matches = getCompletionMatches(value);
-    /* Full completion string, not just the remainder — the CSS overlap
+    /* Full completion string, not just the remainder - the CSS overlap
        trick (see .console__ghost) relies on the ghost's leading
        characters matching what's already typed, so the input's own
        opaque text can sit on top of them and hide them. */
@@ -1614,7 +1614,7 @@ window.D7Motion = (function () {
 
   /* --------------------------------------------------------------------------
      01c. CARET TRACKING
-     #console-caret is a styled element (glowing box, blink animation — see
+     #console-caret is a styled element (glowing box, blink animation - see
      styles.css), not the input's native cursor, so it needed a way to know
      the real cursor's pixel position. There's no built-in API for "where is
      the text cursor, in pixels" on a plain <input>, so this measures it
@@ -1653,7 +1653,7 @@ window.D7Motion = (function () {
   }
 
   /* Solid while characters are actively being typed, blinking once typing
-     pauses — same idea as the intro's own caret, just driven by a short
+     pauses - same idea as the intro's own caret, just driven by a short
      idle timer here instead of the intro's own scripted timeline, since
      real typing doesn't have a predetermined rhythm to hook into. */
   var caretIdleTimer = null;
@@ -1670,7 +1670,7 @@ window.D7Motion = (function () {
     syncCaretMirrorFont();
     updateCaretPosition();
     /* The font-size uses a clamp(), so it can change across the same
-       session on window resize — keep the mirror in step with it. */
+       session on window resize - keep the mirror in step with it. */
     window.addEventListener('resize', function () {
       syncCaretMirrorFont();
       updateCaretPosition();
@@ -1689,8 +1689,8 @@ window.D7Motion = (function () {
     markCaretTyping();
   });
 
-  /* Cursor can also move without the value changing — arrow keys, Home/
-     End, or clicking partway through the text — none of which fire
+  /* Cursor can also move without the value changing - arrow keys, Home/
+     End, or clicking partway through the text - none of which fire
      'input'. 'keyup' catches the former; 'click' catches the latter. */
   el.input.addEventListener('keyup', updateCaretPosition);
   el.input.addEventListener('click', updateCaretPosition);
@@ -1711,14 +1711,14 @@ window.D7Motion = (function () {
       el.input.value = completion;
       if (window.D7Sound) { window.D7Sound.play(); }   /* setting .value directly doesn't fire 'input', so this needs its own sound cue */
     }
-    /* setting .value directly doesn't fire 'input' either — same reason
+    /* setting .value directly doesn't fire 'input' either - same reason
        these need their own calls too. */
     updateGhost();
     updateCaretPosition();
   });
 
   /* Clicking a highlighted word (in the hint line or a page's return prompt)
-     runs that command directly — a mouse-friendly shortcut alongside typing. */
+     runs that command directly - a mouse-friendly shortcut alongside typing. */
   document.addEventListener('click', function (event) {
     var target = event.target.closest ? event.target.closest('[data-cmd]') : null;
     if (!target) { return; }
@@ -1727,7 +1727,7 @@ window.D7Motion = (function () {
   });
 
   /* Anywhere-click skips straight to the finished text while a page's
-     content is still typing in — the ".is-typing" hint (see styles.css)
+     content is still typing in - the ".is-typing" hint (see styles.css)
      is what tells the user this works. Guarded to only fire while typing
      is actually in progress, so it never interferes with a normal click
      on "back" or the video card once the text has settled.
@@ -1735,7 +1735,7 @@ window.D7Motion = (function () {
      Also skips entirely for clicks on a [data-cmd] word. Without that
      exclusion, clicking a command (rather than typing it) would trigger
      THIS listener too, on the exact same click: the [data-cmd] handler
-     above runs first, calls showPage(), which calls runPageTypeIn() —
+     above runs first, calls showPage(), which calls runPageTypeIn() -
      and since everything before that function's first `await` runs
      synchronously, including adding .is-typing, by the time THIS listener
      runs (same click, later in the chain) it sees typing already "in
@@ -1749,7 +1749,7 @@ window.D7Motion = (function () {
   });
 
   /* Esc returns to the console from any open page, and a second Esc fired
-     while the outro is already running skips straight through it —
+     while the outro is already running skips straight through it -
      showConsole() itself handles that branch (isLeaving check). Checking
      isLeaving here too matters because activePage is nulled the instant
      an outro starts, so activePage alone would miss that second press.
@@ -1792,7 +1792,7 @@ window.D7Motion = (function () {
   'use strict';
 
   function prefersReducedMotion() {
-    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+    /* Manual toggle only (see Stage 0b) - deliberately doesn't also check
        the OS-level prefers-reduced-motion media query, since several of
        this site's animations are the design, not just flourish; the
        choice is offered explicitly via the button instead of inferred. */
@@ -1836,7 +1836,7 @@ window.D7Motion = (function () {
     if (!entry.state) { entry.state = entry.createState(); }
 
     if (prefersReducedMotion()) {
-      /* One static frame, no loop — texture without motion. */
+      /* One static frame, no loop - texture without motion. */
       entry.draw(entry.ctx, entry.canvas.clientWidth, entry.canvas.clientHeight, entry.state, 0);
       return;
     }
@@ -1873,7 +1873,7 @@ window.D7Motion = (function () {
 
 
   /* --------------------------------------------------------------------------
-     01. DATA BREACH — falling fragments
+     01. DATA BREACH - falling fragments
      Small broken-bracket glyphs drifting downward at slightly different
      speeds, like debris (or leaking data) falling out of the page.
      Positions are stored as 0-1 fractions of width/height so a window
@@ -1884,8 +1884,8 @@ window.D7Motion = (function () {
     var particles = [];
     var count = 56;
     for (var i = 0; i < count; i++) {
-      /* Bigger fragments are treated as "closer" — slower, more opaque, a
-         touch of glow — which gives the field some depth instead of every
+      /* Bigger fragments are treated as "closer" - slower, more opaque, a
+         touch of glow - which gives the field some depth instead of every
          piece reading as the same distance. */
       var depth = Math.random();
       particles.push({
@@ -1932,7 +1932,7 @@ window.D7Motion = (function () {
       ctx.shadowColor = p.amber ? 'rgba(255, 180, 84, 0.5)' : 'rgba(70, 230, 208, 0.5)';
       ctx.shadowBlur = 3 + p.depth * 5;
 
-      /* Two opposite bracket-corners — reads as a "broken" fragment rather
+      /* Two opposite bracket-corners - reads as a "broken" fragment rather
          than a solid shape. */
       ctx.beginPath();
       ctx.moveTo(-p.size, -p.size * 0.4);
@@ -1948,8 +1948,8 @@ window.D7Motion = (function () {
 
 
   /* --------------------------------------------------------------------------
-     02. IAM — pulsing access-point grid
-     A grid of small squares whose brightness is a travelling sine wave —
+     02. IAM - pulsing access-point grid
+     A grid of small squares whose brightness is a travelling sine wave -
      reads as access points lighting up and dimming in sequence, like a
      scanner sweeping the grid. Entirely stateless: the layout is derived
      from the canvas size fresh each frame, so resizing needs no reset.
@@ -1968,7 +1968,7 @@ window.D7Motion = (function () {
     var t = elapsedMs / 1000;
 
     /* A faint permanent lattice, dimly visible even where the wave hasn't
-       reached — reads as "the grid is always there, the scan is what lights
+       reached - reads as "the grid is always there, the scan is what lights
        it up" rather than dots appearing from nothing. */
     ctx.fillStyle = 'rgba(70, 230, 208, 0.05)';
     for (var gc = 0; gc < cols; gc++) {
@@ -2008,18 +2008,18 @@ window.D7Motion = (function () {
 
 
   /* --------------------------------------------------------------------------
-     03. MALWARE — spreading infection graph
+     03. MALWARE - spreading infection graph
      A small fixed network: nodes connected to their two nearest neighbours.
      A single "patient zero" infects outward through the graph (breadth-
      first, so it spreads through connections rather than randomly), holds
      at full infection, fades back to clean, pauses, then loops.
 
      Node layout and the patient-zero index are hand-fixed (not randomised)
-     so the animation is identical on every load — a predictable, reviewed
+     so the animation is identical on every load - a predictable, reviewed
      result rather than a different graph each visit.
   -------------------------------------------------------------------------- */
 
-  /* Normalised (0-1) positions — patient zero (index 0) sits centrally so
+  /* Normalised (0-1) positions - patient zero (index 0) sits centrally so
      the infection has room to spread outward in every direction. */
   var GRAPH_NODES = [
     { x: 0.50, y: 0.50 },
@@ -2036,7 +2036,7 @@ window.D7Motion = (function () {
     var n = nodes.length;
 
     /* Connect each node to its two nearest neighbours, deduplicating so an
-       edge isn't drawn twice. Deterministic — same inputs, same graph. */
+       edge isn't drawn twice. Deterministic - same inputs, same graph. */
     var edges = [];
     var edgeSeen = {};
     nodes.forEach(function (a, i) {
@@ -2180,7 +2180,7 @@ window.D7Motion = (function () {
   'use strict';
 
   function prefersReducedMotion() {
-    /* Manual toggle only (see Stage 0b) — deliberately doesn't also check
+    /* Manual toggle only (see Stage 0b) - deliberately doesn't also check
        the OS-level prefers-reduced-motion media query, since several of
        this site's animations are the design, not just flourish; the
        choice is offered explicitly via the button instead of inferred. */
@@ -2191,7 +2191,7 @@ window.D7Motion = (function () {
   if (!wrap) { return; }
 
   var iframe = wrap.querySelector('[data-yt-iframe]');
-  if (!iframe) { return; }   /* fallback link markup, not a real embed — see NOTE above */
+  if (!iframe) { return; }   /* fallback link markup, not a real embed - see NOTE above */
 
   var unmuteBtn     = wrap.querySelector('[data-yt-unmute]');
   var unmuteLabel   = wrap.querySelector('[data-yt-unmute-label]');

@@ -30,20 +30,20 @@
    text on black since that's the obvious "hacker terminal" cliché.
 --------------------------------------------------------------------------- */
 :root {
-  /* Backgrounds — layered from darkest (page) to lightest (raised panel) */
+  /* Backgrounds - layered from darkest (page) to lightest (raised panel) */
   --bg-void:      #05070d;   /* page background, near-black navy */
   --bg-deep:      #080c16;
   --bg-panel:     #0d1220;   /* terminal window body */
   --bg-chrome:    #141b2c;   /* terminal window title bar */
 
   /* Accents */
-  --accent:       #46e6d0;   /* neon cyan — primary */
+  --accent:       #46e6d0;   /* neon cyan - primary */
   --accent-dim:   #1f8f83;
   --accent-glow:  rgba(70, 230, 208, 0.35);
-  --amber:        #ffb454;   /* amber — secondary accent / warnings */
+  --amber:        #ffb454;   /* amber - secondary accent / warnings */
   --amber-glow:   rgba(255, 180, 84, 0.28);
 
-  /* Text — body copy is off-white, never neon, so it stays readable */
+  /* Text - body copy is off-white, never neon, so it stays readable */
   --text:         #e6ebf2;   /* headings on dark */
   --text-body:    #c3ccd9;   /* paragraphs */
   --text-muted:   #7d8798;   /* captions, hints */
@@ -59,7 +59,7 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                Helvetica, Arial, sans-serif;
 
-  /* Fluid type scale — clamp(min, preferred, max) keeps text sized to the
+  /* Fluid type scale - clamp(min, preferred, max) keeps text sized to the
      viewport without needing a media query for every step. */
   --fs-title:  clamp(1.75rem, 6.2vw, 4.75rem);
   --fs-sup:    clamp(0.8rem, 2.2vw, 1.35rem);
@@ -218,7 +218,7 @@ button { font: inherit; color: inherit; }
 .screen--intro { z-index: 30; }
 .screen--intro.is-active { z-index: 40; }
 
-/* When the intro is dismissed it also scales up very slightly — the small
+/* When the intro is dismissed it also scales up very slightly - the small
    push outwards is what sells the "title dissolving into the system" beat. */
 .screen--intro { transform: scale(1.06); transition-property: opacity, visibility, transform; }
 .screen--intro.is-active { transform: scale(1); }
@@ -353,7 +353,7 @@ button { font: inherit; color: inherit; }
   position: relative;
 }
 
-/* "D7 presents:" — the small supporting line */
+/* "D7 presents:" - the small supporting line */
 .intro-title__line--presents {
   font-size: var(--fs-sup);
   color: var(--amber);
@@ -362,7 +362,7 @@ button { font: inherit; color: inherit; }
   text-shadow: 0 0 18px var(--amber-glow);
 }
 
-/* "Cloud Computing and Security Issues" — the hero line */
+/* "Cloud Computing and Security Issues" - the hero line */
 .intro-title__line--main {
   font-size: var(--fs-title);
   color: var(--text);
@@ -398,7 +398,7 @@ button { font: inherit; color: inherit; }
   50%, 100% { opacity: 0; }
 }
 
-/* While characters are actively being typed the caret stays solid —
+/* While characters are actively being typed the caret stays solid -
    blinking only resumes on a pause. Feels much more like a real terminal. */
 .caret.is-typing { animation: none; opacity: 1; }
 .caret.is-hidden { opacity: 0 !important; animation: none; }
@@ -472,7 +472,7 @@ button { font: inherit; color: inherit; }
 .skip-btn:hover .skip-btn__key { color: var(--accent-dim); }
 
 /* --- Settings rows + switches ----------------------------------------------
-   Shared by #gate (the startup screen) and #page-settings — a labelled row
+   Shared by #gate (the startup screen) and #page-settings - a labelled row
    per preference (icon + title + one-line description) ending in a real
    toggle switch, rather than a button whose own text had to double as its
    own status readout. script.js wires every [data-sound-toggle]/
@@ -561,7 +561,7 @@ button { font: inherit; color: inherit; }
   transition: transform 200ms var(--ease-out), background-color 200ms;
 }
 
-/* Checked = sound on (cyan) — the site's normal affirmative colour. */
+/* Checked = sound on (cyan) - the site's normal affirmative colour. */
 .switch[data-sound-toggle][aria-checked="true"] {
   background: rgba(70, 230, 208, 0.18);
   border-color: var(--line-accent);
@@ -572,7 +572,7 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* Checked = animations reduced (amber) — "a setting is dialled down",
+/* Checked = animations reduced (amber) - "a setting is dialled down",
    same colour logic the old button version used. */
 .switch[data-motion-toggle][aria-checked="true"] {
   background: rgba(255, 180, 84, 0.16);
@@ -600,7 +600,7 @@ button { font: inherit; color: inherit; }
 /* --- The relocatable command bar ------------------------------------------
    Default state: a normal flex item inside .console__inner, laid out
    exactly as the form + feedback line used to be when they were direct
-   children of it (same gap, same width) — visually nothing changes here.
+   children of it (same gap, same width) - visually nothing changes here.
 
    .console-bar--pinned (added by script.js whenever a content page is
    open) is the other state: fixed to the top of the viewport instead, so
@@ -619,7 +619,7 @@ button { font: inherit; color: inherit; }
   position: fixed;
   /* PIN_TOP in script.js (the hero's pinned-thumbnail offset) and
      .term-window__bar's sticky `top` are both deliberately kept clear of
-     this same ~64px header band — see the comments there. */
+     this same ~64px header band - see the comments there. */
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
@@ -627,7 +627,7 @@ button { font: inherit; color: inherit; }
   width: min(480px, calc(100vw - 2rem));
   gap: 0.35em;
 }
-/* Slightly smaller chrome when pinned — this is a persistent utility bar
+/* Slightly smaller chrome when pinned - this is a persistent utility bar
    here, not the centrepiece it is on the console screen. */
 .console-bar--pinned .console__form {
   padding: 0.5em 0.8em;
@@ -665,7 +665,7 @@ button { font: inherit; color: inherit; }
    Styled as one continuous terminal line: a ">" prompt symbol and a real
    <input> (so it's a genuine, accessible text field). The input's native
    caret is used directly (just recoloured to match the theme) rather than
-   faked with a separate element — an earlier version had a decorative
+   faked with a separate element - an earlier version had a decorative
    caret span fixed to the end of the input box, but that never actually
    tracked the real cursor position, so it sat in the wrong place the
    moment the field wasn't empty or wasn't full. The browser's own caret
@@ -695,7 +695,7 @@ button { font: inherit; color: inherit; }
 }
 
 /* Wraps the ghost span + the real input, stacked exactly on top of one
-   another — see the HTML comment above this markup for how the illusion
+   another - see the HTML comment above this markup for how the illusion
    works. Takes over the flex-sizing that used to live on .console__input
    directly, since the input itself is now 100% of this wrapper instead of
    a flex child in its own right. */
@@ -716,13 +716,13 @@ button { font: inherit; color: inherit; }
   font-size: var(--fs-body);
   color: var(--text);
   letter-spacing: 0.02em;
-  caret-color: transparent;   /* hidden — #console-caret below is the real one, and actually tracks the cursor */
+  caret-color: transparent;   /* hidden - #console-caret below is the real one, and actually tracks the cursor */
 }
 .console__input::placeholder { color: var(--text-faint); }
 .console__input:focus { outline: none; }
 
 /* The autocomplete preview. Identical font metrics to .console__input
-   above is what makes the overlap work — script.js sets this span's text
+   above is what makes the overlap work - script.js sets this span's text
    to the FULL suggested command (not just the remainder), so the portion
    that overlaps what's already typed sits invisibly underneath the real
    input's own opaque text, and only the un-typed tail peeks out past it. */
@@ -744,7 +744,7 @@ button { font: inherit; color: inherit; }
 
 /* The styled caret. script.js positions this with an inline `left` (in px,
    measured against a hidden font-matched mirror of the input's text up to
-   the real cursor) every time the cursor could have moved — typing,
+   the real cursor) every time the cursor could have moved - typing,
    arrow keys, clicking, Tab-completion. The `left` transition is what
    gives it a quick glide rather than a jump when the cursor makes a
    bigger move (clicking elsewhere in the text, Tab-completing). */
@@ -762,7 +762,7 @@ button { font: inherit; color: inherit; }
   transition: left 60ms linear;
   animation: caret-blink 1s steps(1, end) infinite;
 }
-/* Solid (not blinking) while characters are actively being typed — same
+/* Solid (not blinking) while characters are actively being typed - same
    convention as the intro's own caret (.caret.is-typing). Blinking resumes
    once typing pauses (script.js debounces this on a short idle timer). */
 .console__caret.is-typing { animation: none; opacity: 1; }
@@ -781,15 +781,15 @@ button { font: inherit; color: inherit; }
 }
 .console__feedback.is-visible { opacity: 1; }
 
-/* The "help" response uses this instead of the default amber — reads as
+/* The "help" response uses this instead of the default amber - reads as
    informational rather than a warning about bad input. */
 .console__feedback.is-info { color: var(--accent); }
 
-/* Clickable command words inside the help response — same dotted-underline-
+/* Clickable command words inside the help response - same dotted-underline-
    on-hover affordance as the hint line and every page's "back" prompt. */
 .console__feedback span[data-cmd] {
   /* Amber, same as every other clickable word on the site (the hint line,
-     each page's "back" prompt) — against the feedback line's own cyan
+     each page's "back" prompt) - against the feedback line's own cyan
      (.is-info) or amber (default) colour, this is what actually signals
      "these specific words are clickable" rather than leaving them
      indistinguishable from the surrounding sentence. */
@@ -823,7 +823,7 @@ button { font: inherit; color: inherit; }
   border-bottom-color: currentColor;
 }
 
-/* Small, understated session counter, corner of the console screen only —
+/* Small, understated session counter, corner of the console screen only -
    it does not follow the user onto the content pages. */
 .console__counter {
   position: absolute;
@@ -841,7 +841,7 @@ button { font: inherit; color: inherit; }
    07b. CONTENT PAGES
    Each page opens like a file being read: two "access log" lines, then a
    terminal-window card holding the actual written content. Body copy is
-   deliberately off-white/light-gray (var(--text-body)) rather than neon —
+   deliberately off-white/light-gray (var(--text-body)) rather than neon -
    long paragraphs in a glowing accent colour are unreadable.
 --------------------------------------------------------------------------- */
 .screen--page { align-items: flex-start; overflow-y: auto; padding-block: var(--gap-lg); }
@@ -908,11 +908,11 @@ button { font: inherit; color: inherit; }
   transform: translateY(14px);
   transition: opacity 480ms 420ms var(--ease-out), transform 480ms 420ms var(--ease-out);
 
-  /* NOTE: no `overflow: hidden` here (deliberately) — see .term-window__bar
+  /* NOTE: no `overflow: hidden` here (deliberately) - see .term-window__bar
      below for why, and .term-window__body for where the clipping moved. */
 }
 
-/* Small discoverability hint while script.js (Stage 2) is mid-typewriter —
+/* Small discoverability hint while script.js (Stage 2) is mid-typewriter -
    generated content rather than a permanent DOM element, since it only
    ever needs to exist for the handful of seconds text is actively typing. */
 .term-window.is-typing::after {
@@ -930,7 +930,7 @@ button { font: inherit; color: inherit; }
 /*
   Reveal state.
   `.screen--page` gets `.is-revealed` added by script.js each time the page
-  is opened (not just once on load) — see the router's `showPage()`. Using a
+  is opened (not just once on load) - see the router's `showPage()`. Using a
   toggled class + transitions (rather than a @keyframes animation with
   `forwards`) is what lets this replay every visit instead of only firing
   once when the element first enters the DOM.
@@ -939,13 +939,13 @@ button { font: inherit; color: inherit; }
 .screen--page.is-revealed .term-window       { opacity: 1; transform: none; }
 
 /* Sticky rather than static: on long pages (the aspect pages especially,
-   with their bullet summaries) it stays visible — "which file am I
+   with their bullet summaries) it stays visible - "which file am I
    reading" shouldn't require scrolling back up to check.
 
    This is why .term-window above has no `overflow: hidden`: that property
    formally makes an element a scroll container regardless of whether it
    actually has anything to scroll, and position: sticky resolves against
-   the *nearest* scroll container — so a sticky child of an overflow:hidden
+   the *nearest* scroll container - so a sticky child of an overflow:hidden
    parent sticks relative to that (permanently zero-range) parent instead
    of the real one (.screen--page), and never visually detaches at all.
    The corner-radius clipping that overflow: hidden used to provide moved
@@ -954,7 +954,7 @@ button { font: inherit; color: inherit; }
    a parent. */
 .term-window__bar {
   position: sticky;
-  /* Not 0 — the persistent pinned command bar (.console-bar--pinned) now
+  /* Not 0 - the persistent pinned command bar (.console-bar--pinned) now
      occupies roughly the top 72px of every content page, and this would
      otherwise stick directly underneath/behind it. Matches PIN_TOP in
      script.js, which reserves the same band for the hero's pinned
@@ -1005,7 +1005,7 @@ button { font: inherit; color: inherit; }
   text-shadow: 0 0 16px var(--accent-glow);
 }
 
-/* Body copy: off-white/light-gray sans-serif, generous line height — this
+/* Body copy: off-white/light-gray sans-serif, generous line height - this
    is the readable "document" register, distinct from the neon terminal
    voice used everywhere else on the site. */
 .term-window__body p {
@@ -1024,31 +1024,31 @@ button { font: inherit; color: inherit; }
 
      - [data-typewriter] elements (headings + body paragraphs) are typed
        and erased character-by-character by script.js (Stage 2) directly
-       via textContent — the empty-to-full text IS the reveal, so these
+       via textContent - the empty-to-full text IS the reveal, so these
        are excluded from the opacity/transform treatment below entirely;
        they're always at full opacity.
 
      - [data-reveal] elements (the video block; a page's bullet-point
        summary list; the whole reference section on the Summary page) are
-       plain content — no character typewriter, since a <ul> or citation
+       plain content - no character typewriter, since a <ul> or citation
        markup (<em>/<a>) would have to be torn apart and rebuilt to type
        into. But unlike the old approach (below), these need to fade in at
        a SPECIFIC POINT in the typed sequence, not on a fixed delay from
-       page-open — a bullet list sitting between two typed paragraphs must
+       page-open - a bullet list sitting between two typed paragraphs must
        wait for the first paragraph to actually finish typing (which takes
        a variable, unknowable-in-advance amount of time) before it
        appears, not fade in on its own fixed timer while typing is still
        running above it. So script.js (Stage 2, runPageTypeIn) drives
        these directly with the same .is-typed-in class the video always
-       used — the rule for that is a few lines down.
+       used - the rule for that is a few lines down.
 
      - Everything else (only the reference list's individual entries used
        to fall here) keeps the ORIGINAL fade-up stagger, triggered by the
        ancestor .is-revealed class with a hand-written per-child delay,
        since CSS can't multiply a step value by the child index. Nothing
-       currently uses this any more — every page's non-typed content is
+       currently uses this any more - every page's non-typed content is
        now wrapped in a single [data-reveal] block instead of left as
-       individual stagger items — but the rule stays as a documented
+       individual stagger items - but the rule stays as a documented
        fallback rather than being deleted outright, since it costs nothing
        inert and a future page could still reasonably want individually-
        staggered non-typed items. Covers up to 12 items. */
@@ -1073,7 +1073,7 @@ button { font: inherit; color: inherit; }
 .term-window__body > *:not([data-typewriter]):not([data-reveal]):nth-child(12) { transition-delay: 1085ms; }
 
 /* [data-reveal]'s resting state and its script.js-driven trigger. Not tied
-   to the ancestor .is-revealed class or to nth-child position at all —
+   to the ancestor .is-revealed class or to nth-child position at all -
    script.js adds/removes .is-typed-in at exactly the right moment in the
    typed sequence, in either direction (typing in or erasing out). */
 [data-reveal] {
@@ -1086,7 +1086,7 @@ button { font: inherit; color: inherit; }
   transform: none;
 }
 
-/* Outro (non-typed, non-reveal elements only — typed ones are erased by
+/* Outro (non-typed, non-reveal elements only - typed ones are erased by
    script.js, [data-reveal] ones are hidden by script.js removing
    .is-typed-in, both in their own proper sequence position; see above):
    drops out together, quickly and with no stagger, right before the
@@ -1112,7 +1112,7 @@ button { font: inherit; color: inherit; }
 }
 
 /* Wraps the Summary page's "References" heading + citation list as ONE
-   [data-reveal] block (see the Stage 2 comment in script.js for why) — the
+   [data-reveal] block (see the Stage 2 comment in script.js for why) - the
    top border/padding is what gives it visual separation from the summary
    prose typed in just above it, since it's no longer a fresh term-window
    of its own the way the standalone references page used to be. */
@@ -1143,7 +1143,7 @@ button { font: inherit; color: inherit; }
 }
 
 /* Unmute control. The video always starts muted (autoplay policy), so this
-   button is the only way sound turns on — it needs to be easy to find. */
+   button is the only way sound turns on - it needs to be easy to find. */
 .term-window__video-unmute {
   position: absolute;
   right: 0.75em;
@@ -1261,7 +1261,7 @@ button { font: inherit; color: inherit; }
 }
 .page__footer p:first-child { color: var(--text); }
 
-/* Personal links — sits with the author details at the bottom of the footer. */
+/* Personal links - sits with the author details at the bottom of the footer. */
 .page__footer p.page__footer-links {
   margin-top: 0.35em;
   display: flex;
@@ -1284,7 +1284,7 @@ button { font: inherit; color: inherit; }
 }
 .page__footer-links span { color: var(--text-faint); }
 
-/* Brand marks (LinkedIn/GitHub) next to the link text — inline SVG rather
+/* Brand marks (LinkedIn/GitHub) next to the link text - inline SVG rather
    than fetching each site's favicon, so there's no external request and no
    dependency on either site staying up. currentColor means each icon
    automatically matches its link's own colour, including on hover. */
@@ -1325,7 +1325,7 @@ button { font: inherit; color: inherit; }
 
    Mechanically: .hero is position:fixed (the section scrolls *underneath*
    it), so going from "full size, centred" to "small, pinned at top" is a
-   single transform on .hero__frame — no width/height/top animation, so no
+   single transform on .hero__frame - no width/height/top animation, so no
    layout reflow, and the browser can keep the whole thing on the GPU.
    script.js measures the image and computes that transform from scroll
    progress; everything here is just the resting state it interpolates
@@ -1392,19 +1392,12 @@ button { font: inherit; color: inherit; }
     0 0 42px rgba(70, 230, 208, 0.10);
 }
 
-/* Glitch-in: plays once whenever a hero page is freshly opened (triggered
-   by playHeroGlitch() in script.js, called from resetHero()).
-
-   Reads as a deliberate "digital glitch" rather than a rendering hiccup
-   because it's built the way real chromatic-aberration glitches actually
-   look: two colour-shifted copies of the same image (::before red-ish,
-   ::after cyan-ish, via mix-blend-mode: screen) punch outward from the
-   real image and snap back, while the real image itself does a couple of
-   sharp horizontal jumps. Only .hero__img and the ::before/::after ghosts
-   are animated here — never .hero__frame itself, whose transform is owned
-   frame-by-frame by the scroll-driven shrink effect (applyHero() in
-   script.js); animating the same property on the same element from two
-   places would have them fighting every scroll tick. */
+/* Glitch effect that plays when a hero image first loads (triggered from
+   script.js). ::before/::after are colour-shifted copies of the same
+   image that flash outward and snap back, like a screen glitching. I
+   animate .hero__img here, not .hero__frame, because .hero__frame's
+   position is already controlled by the scroll-shrink effect in
+   script.js and I don't want the two fighting each other. */
 .hero__frame::before,
 .hero__frame::after {
   content: '';
@@ -1479,7 +1472,7 @@ button { font: inherit; color: inherit; }
 }
 
 /* Supplies the scroll distance the shrink animation plays out over. It's
-   an empty block in normal flow — the hero itself is fixed and takes up no
+   an empty block in normal flow - the hero itself is fixed and takes up no
    flow space, so without this there'd be nothing to scroll. */
 .hero__spacer {
   flex: none;
@@ -1525,15 +1518,9 @@ button { font: inherit; color: inherit; }
   letter-spacing: 0.04em;
 }
 
-/* Log-name prefix on the Summary page's three body lines (e.g. the
-   "data_breach.log" in "data_breach.log - sensitive data ..."): bold
-   off-white rather than --accent (used by headings) or --amber (used by
-   clickable data-cmd spans elsewhere), so it reads as a label without
-   being mistaken for either. Only wraps the log name itself, not the rest
-   of the sentence - which is why these three lines are [data-reveal]
-   rather than [data-typewriter]: typing only ever sets textContent (see
-   script.js Stage 1b), so a nested <strong> couldn't survive being typed
-   character-by-character. */
+/* Bolds just the "data_breach.log" part on the Summary page, in plain
+   white instead of the cyan headings use or the amber clickable links
+   use, so it doesn't get mixed up with either. */
 .term-window__lognote {
   font-family: var(--font-mono);
   color: var(--text);
@@ -1579,7 +1566,7 @@ button { font: inherit; color: inherit; }
   border-bottom-color: currentColor;
 }
 
-/* Plain bullet-point summary lists on the three aspect pages — same
+/* Plain bullet-point summary lists on the three aspect pages - same
    terminal-bullet visual language as .log-list above (still reads as part
    of the same system), but plain text: nothing here is a command, so
    there's no amber/clickable treatment on the list items themselves. */
@@ -1629,7 +1616,7 @@ button { font: inherit; color: inherit; }
    08. SITE LOGO
    Fixed top-left, shared by the console and every content page. Hidden
    during the intro and faded in once script.js hands off to the console
-   (see enterConsole() in script.js) — it never appears on screen--intro.
+   (see enterConsole() in script.js) - it never appears on screen--intro.
 --------------------------------------------------------------------------- */
 .site-logo {
   position: fixed;
@@ -1671,7 +1658,7 @@ button { font: inherit; color: inherit; }
   border-color: var(--accent);
 }
 
-/* Animated "breathing" glow — a slow pulse behind the mark, on an
+/* Animated "breathing" glow - a slow pulse behind the mark, on an
    independent ::after layer (z-index: -1) so it never fights with the
    hover state above, which only touches the mark's own border colour.
    Frozen to a single frame under prefers-reduced-motion by the global rule
@@ -1694,7 +1681,7 @@ button { font: inherit; color: inherit; }
 /* ---------------------------------------------------------------------------
    07d. HERO IMAGE LIGHTBOX
    Full-screen and vertically scrollable rather than shrunk to fit the
-   viewport — the whole point is reading a tall (portrait) image at its
+   viewport - the whole point is reading a tall (portrait) image at its
    real clarity, which "fit it inside 90vh" would work directly against.
    script.js toggles .is-open and swaps the <img> src/alt per click.
 --------------------------------------------------------------------------- */
@@ -1702,7 +1689,7 @@ button { font: inherit; color: inherit; }
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 970;   /* above the logo (950), below nothing — this is the top layer */
+  z-index: 970;   /* above the logo (950), below nothing - this is the top layer */
 
   background: rgba(5, 7, 13, 0.96);
   backdrop-filter: blur(6px);
@@ -1718,7 +1705,7 @@ button { font: inherit; color: inherit; }
   display: flex;
   justify-content: center;
   /* flex's default align-items is `stretch`, which would silently stretch
-     the image to fill this container's height — exactly the opposite of
+     the image to fill this container's height - exactly the opposite of
      what a scrollable viewer needs (the image should size by its own
      aspect ratio, and the container should scroll to fit it, not the
      other way around). */
@@ -1732,7 +1719,7 @@ button { font: inherit; color: inherit; }
   position: relative;
   display: inline-block;
   /* Set by script.js (openLightbox()) to the same image, so the ::before/
-     ::after ghost copies below have something to render — same technique
+     ::after ghost copies below have something to render - same technique
      as .hero__frame's chromatic-aberration glitch. */
   --glitch-src: none;
 }
@@ -1955,7 +1942,7 @@ button { font: inherit; color: inherit; }
    11. PRINT STYLESHEET (references page only)
    Printing always renders the references page's citation list, regardless
    of which screen is actually open on-screen when the user prints (Ctrl/Cmd
-   + P) — the report's citations are the one thing worth a paper/PDF copy,
+   + P) - the report's citations are the one thing worth a paper/PDF copy,
    so "print" is deliberately tied to that content rather than to whatever
    happens to be visible. Works by hiding everything by default and only
    un-hiding the references content, then stripping the terminal chrome
@@ -2005,7 +1992,7 @@ button { font: inherit; color: inherit; }
 
   /* The heading and each citation only reach opacity: 1 via
      .screen--page.is-revealed (added by script.js when the page is
-     actually opened) — if you print without ever having visited the
+     actually opened) - if you print without ever having visited the
      references page this session, that class was never added and these
      sit at their default opacity: 0 resting state. Print doesn't care
      about that on-screen reveal choreography at all, so force it here
@@ -2016,7 +2003,7 @@ button { font: inherit; color: inherit; }
   }
 
   /* Swap the neon-glow monospace heading and light-on-dark body copy for
-     a plain serif document register — this is the "un-terminal'd" part. */
+     a plain serif document register - this is the "un-terminal'd" part. */
   #page-about .term-window__heading {
     color: #000 !important;
     text-shadow: none !important;

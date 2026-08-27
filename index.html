@@ -40,10 +40,10 @@
   </div>
 
   <!--
-    Hero image lightbox. One shared instance reused by every hero page —
+    Hero image lightbox. One shared instance reused by every hero page -
     script.js points its <img> at whichever image was clicked. Full-screen,
     vertically scrollable (rather than shrunk-to-fit), since the point of
-    it is reading a tall image at its actual clarity — shrinking a portrait
+    it is reading a tall image at its actual clarity - shrinking a portrait
     infographic down to fit a viewport height defeats that.
   -->
   <div id="hero-lightbox" class="hero-lightbox" aria-hidden="true">
@@ -58,7 +58,7 @@
   </div>
 
 
-  <!-- Screen 0: Startup Gate. Shown first, before the intro even starts —
+  <!-- Screen 0: Startup Gate. Shown first, before the intro even starts -
        partly so sound/animation preferences are set up front instead of
        relying on someone finding the settings page mid-experience, and
        partly because the Continue button's click is what unlocks the
@@ -74,7 +74,7 @@
         page too, if you change your mind later.
       </p>
 
-      <!-- Same .settings-list markup as #page-settings below — script.js
+      <!-- Same .settings-list markup as #page-settings below - script.js
            wires every [data-sound-toggle]/[data-motion-toggle] element on
            the page to the same shared state, so this copy and the
            settings-page copy always agree. -->
@@ -150,8 +150,8 @@
       <!--
         #console-bar (form + feedback) is not permanently anchored here.
         It starts in this spot in the markup, but script.js physically
-        relocates this exact element — same <input>, same ghost/caret/
-        tab-completion wiring, nothing rebuilt — into #top-bar-slot below
+        relocates this exact element - same <input>, same ghost/caret/
+        tab-completion wiring, nothing rebuilt - into #top-bar-slot below
         whenever a content page is open, then moves it back here (via
         insertBefore against #console-bar-anchor, which just marks the
         spot) once you return to the console. One command bar, reused
@@ -185,7 +185,7 @@
     <p id="console-counter" class="console__counter">commands entered: <span data-counter-value>0</span></p>
   </main>
 
-  <!-- Where #console-bar lives while any content page is open — fixed,
+  <!-- Where #console-bar lives while any content page is open - fixed,
        pinned to the top, so a command can be typed from anywhere without
        first returning to the console. Empty (and so invisible/inert) at
        rest; script.js is the only thing that ever puts something in it. -->
@@ -197,7 +197,7 @@
   <!--
     Page: Home
     Carries the scroll-driven hero (the infographic). The hero element is
-    position:fixed — the section scrolls underneath it — so shrinking it is
+    position:fixed - the section scrolls underneath it - so shrinking it is
     a pure transform with no layout reflow. .hero__spacer inside
     .page__inner is what supplies the scroll distance; script.js measures
     the image and drives the transform from scroll progress.
@@ -522,6 +522,10 @@
             continuously, not once, and attackers adapt faster than most security policies get reviewed.
             Organisations that treat security as a box to tick when signing a contract usually pay for it later in
             money, reputation and disruption.</p>
+
+          <p data-reveal>If you want to see one of these play out in real life, I linked a video about the Target
+            data breach on the <span data-cmd="data breach">data breach</span> page, or you can watch it directly on
+            <a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube</a>.</p>
 
           <div class="ref-section" data-reveal>
             <h2 class="term-window__heading">References</h2>

@@ -34,7 +34,7 @@
     rel="stylesheet" />
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 
 <body>
@@ -183,9 +183,9 @@
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand infographic to full size">
         <img class="hero__img" data-hero-img src="assets/web/Top_Three_Cloud_Security_Risks_Infographic.jpg"
           alt="Infographic titled Cloud Computing and Security Issues, summarising three key risk domains: data breach, identity and access management, and malware and ransomware."
-          data-caption="Cloud Computing and Security Issues Infographic"
-          data-source="Canva (2025)"
+          data-caption="Cloud Computing and Security Issues Infographic" data-source="Canva (2026)"
           data-source-url="https://www.canva.com" />
+        <span class="hero__badge" data-hero-badge><span class="hero__badge-num">INFOGRAPHIC</span> <span class="hero__badge-src">Canva (2026)</span></span>
       </button>
 
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
@@ -211,31 +211,52 @@
 
           <div class="welcome-lead">
             <figure class="welcome-lead__figure">
-              <img class="welcome-lead__img" src="assets/web/home.webp"
-                alt="Cloud Computing and Data Security conceptual graphic illustrating protected cloud architecture." />
-              <figcaption class="image-source">Image source: <a href="https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09" target="_blank" rel="noopener noreferrer">Kurt (2022)</a></figcaption>
+              <div class="welcome-lead__img-wrap">
+                <img class="welcome-lead__img" src="assets/web/home.webp"
+                  alt="Cloud Computing and Data Security conceptual graphic illustrating protected cloud architecture." />
+              </div>
+              <figcaption class="welcome-lead__caption">
+                <span class="welcome-lead__caption-tag">FIG 0</span>
+                <span class="welcome-lead__caption-text">Architecture &bull; Source: <a
+                    href="https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09" target="_blank"
+                    rel="noopener noreferrer">Kurt (2022)</a></span>
+              </figcaption>
             </figure>
             <div class="welcome-lead__text">
-              <p data-typewriter><strong>Welcome to D7 Cloud Security:</strong> This interactive terminal report provides an in-depth investigation into critical security challenges in cloud environments, evaluating fundamental threat vectors and modern architectural safeguards.</p>
-              <p data-typewriter>Modern organisations increasingly rely on rented cloud storage, software, and elastic compute rather than capital hardware. While this multi-tenant paradigm democratises computational power, it shifts critical data beyond traditional organizational boundaries.</p>
+              <p data-typewriter><strong>Welcome to D7 Cloud Security:</strong> This interactive terminal report
+                provides an in-depth investigation into critical security challenges in cloud environments, evaluating
+                fundamental threat vectors and modern architectural safeguards.</p>
+              <p data-typewriter>Modern organisations increasingly rely on rented cloud storage, software, and elastic
+                compute rather than capital hardware. While this multi-tenant paradigm democratises computational power,
+                it shifts critical data beyond traditional organizational boundaries.</p>
             </div>
           </div>
 
-          <p data-typewriter><strong>Overview &amp; Thesis Statement:</strong> The essential trade-off of cloud computing is convenience versus perimeter control. Storing multi-tenant assets on outsourced infrastructure inherently expands the attack surface. Effective defense requires continuous vigilance across three foundational security aspects: data confidentiality against catastrophic breaches, strict access governance via robust IAM, and resilient endpoint defenses against malware and ransomware propagation.</p>
+          <p data-typewriter><strong>Overview &amp; Thesis Statement:</strong> The essential trade-off of cloud
+            computing is convenience versus perimeter control. Storing multi-tenant assets on outsourced infrastructure
+            inherently expands the attack surface. Effective defense requires continuous vigilance across three
+            foundational security aspects: data confidentiality against catastrophic breaches, strict access governance
+            via robust IAM, and resilient endpoint defenses against malware and ransomware propagation.</p>
 
           <p class="term-window__code" data-typewriter>&gt; three investigative logs available for inspection:</p>
 
           <ul class="log-list">
-            <li><span data-cmd="data breach">data_breach.log</span> - Aspect 1: Shared storage vulnerabilities, vendor attack vectors, and multi-tenant exposure</li>
-            <li><span data-cmd="iam">iam.log</span> - Aspect 2: Credential theft, privilege creep, and access governance failures</li>
-            <li><span data-cmd="malware">malware.log</span> - Aspect 3: Endpoint infections, denial-of-service, and cloud extortion threats</li>
+            <li><span data-cmd="data breach">data_breach.log</span> - Aspect 1: Shared storage vulnerabilities, vendor
+              attack vectors, and multi-tenant exposure</li>
+            <li><span data-cmd="iam">iam.log</span> - Aspect 2: Credential theft, privilege creep, and access governance
+              failures</li>
+            <li><span data-cmd="malware">malware.log</span> - Aspect 3: Endpoint infections, denial-of-service, and
+              cloud extortion threats</li>
           </ul>
 
           <p class="term-window__code" data-typewriter>&gt; external resources &amp; multimedia:</p>
           <ul class="resource-links" data-reveal>
-            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA Cloud Security Guidance</a> - Official technical reference architectures</li>
-            <li><a href="https://cloudsecurityalliance.org/" target="_blank" rel="noopener noreferrer">Cloud Security Alliance (CSA)</a> - Global standards and research benchmarks</li>
-            <li><a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube: Cyber Attack Case Study - Target (2013)</a> - Real-world data breach analysis</li>
+            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA
+                Cloud Security Guidance</a> - Official technical reference architectures</li>
+            <li><a href="https://cloudsecurityalliance.org/" target="_blank" rel="noopener noreferrer">Cloud Security
+                Alliance (CSA)</a> - Global standards and research benchmarks</li>
+            <li><a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube: Cyber Attack
+                Case Study - Target (2013)</a> - Real-world data breach analysis</li>
           </ul>
 
           <p class="term-window__aside">Type <span data-cmd="help">help</span> to see the available commands.</p>
@@ -257,9 +278,9 @@
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
         <img class="hero__img" data-hero-img src="assets/web/databreach.webp"
           alt="T-Mobile cyber attack disclosure illustration representing cloud data breach exposure."
-          data-caption="Data Breach Exposure: T-Mobile Incident Disclosure"
-          data-source="FeedbackItalia (2023)"
+          data-caption="Data Breach Exposure: T-Mobile Incident Disclosure" data-source="FeedbackItalia (2023)"
           data-source-url="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" />
+        <span class="hero__badge" data-hero-badge><span class="hero__badge-num">FIG 1</span> <span class="hero__badge-src">FeedbackItalia (2023)</span></span>
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -281,8 +302,6 @@
         </header>
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Data Breach</h2>
-
-          <div class="term-window__source"><span class="term-source-tag">Figure 1</span> Image source: <a href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank" rel="noopener noreferrer">FeedbackItalia (2023)</a></div>
 
           <p data-typewriter>Data breaches rank among the most damaging security threats in cloud computing.</p>
 
@@ -323,8 +342,11 @@
 
           <p class="term-window__code" data-typewriter>&gt; useful resources &amp; case study:</p>
           <ul class="resource-links" data-reveal>
-            <li><a href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank" rel="noopener noreferrer">FeedbackItalia: T-Mobile Data Breach Incident Report</a></li>
-            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA: Cloud Security Technical Guidance</a></li>
+            <li><a
+                href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/"
+                target="_blank" rel="noopener noreferrer">FeedbackItalia: T-Mobile Data Breach Incident Report</a></li>
+            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA:
+                Cloud Security Technical Guidance</a></li>
           </ul>
 
           <a class="term-window__video term-window__video--fallback" data-reveal
@@ -335,6 +357,12 @@
             <span class="term-window__video-caption">Watch on YouTube - &ldquo;Cyber Attack Explained: Target
               (2013)&rdquo;</span>
           </a>
+
+          <div class="term-window__meta">
+            <span class="term-meta-tag">[visual asset]</span> Figure 1: T-Mobile Incident Disclosure &mdash; Source: <a
+              href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/"
+              target="_blank" rel="noopener noreferrer">FeedbackItalia (2023)</a>
+          </div>
         </div>
       </article>
 
@@ -354,9 +382,9 @@
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
         <img class="hero__img" data-hero-img src="assets/web/iam.webp"
           alt="Visual representation of Identity and Access Management features and access controls."
-          data-caption="Identity & Access Management Core Capabilities"
-          data-source="Axiad (2025)"
+          data-caption="Identity & Access Management Core Capabilities" data-source="Axiad (2025)"
           data-source-url="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" />
+        <span class="hero__badge" data-hero-badge><span class="hero__badge-num">FIG 2</span> <span class="hero__badge-src">Axiad (2025)</span></span>
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -378,8 +406,6 @@
         </header>
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Identity and Access Management</h2>
-
-          <div class="term-window__source"><span class="term-source-tag">Figure 2</span> Image source: <a href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank" rel="noopener noreferrer">Axiad (2025)</a></div>
 
           <p data-typewriter>Weak identity and access management lets unauthorised actors into cloud systems, often
             without triggering any alarm.</p>
@@ -424,9 +450,17 @@
 
           <p class="term-window__code" data-typewriter>&gt; useful resources &amp; guidelines:</p>
           <ul class="resource-links" data-reveal>
-            <li><a href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank" rel="noopener noreferrer">Axiad: 9 Features of a Modern IAM System</a></li>
-            <li><a href="https://www.cisa.gov/topics/cyber-threats-and-advisories/identity-and-access-management" target="_blank" rel="noopener noreferrer">CISA: Identity and Access Management Resource Center</a></li>
+            <li><a href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank"
+                rel="noopener noreferrer">Axiad: 9 Features of a Modern IAM System</a></li>
+            <li><a href="https://www.cisa.gov/topics/cyber-threats-and-advisories/identity-and-access-management"
+                target="_blank" rel="noopener noreferrer">CISA: Identity and Access Management Resource Center</a></li>
           </ul>
+
+          <div class="term-window__meta">
+            <span class="term-meta-tag">[visual asset]</span> Figure 2: IAM System Architecture &mdash; Source: <a
+              href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank"
+              rel="noopener noreferrer">Axiad (2025)</a>
+          </div>
         </div>
       </article>
 
@@ -446,9 +480,9 @@
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
         <img class="hero__img" data-hero-img src="assets/web/malware.webp"
           alt="Conceptual imagery representing ransomware threats and financial extortion in cloud environments."
-          data-caption="Cloud Malware & Ransomware Extortion Vector"
-          data-source="BeeBright / iStock (2026)"
+          data-caption="Cloud Malware & Ransomware Extortion Vector" data-source="BeeBright / iStock (2026)"
           data-source-url="https://www.istockphoto.com/photos/ransomware-money" />
+        <span class="hero__badge" data-hero-badge><span class="hero__badge-num">FIG 3</span> <span class="hero__badge-src">BeeBright / iStock (2026)</span></span>
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -470,8 +504,6 @@
         </header>
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Malware and Ransomware</h2>
-
-          <div class="term-window__source"><span class="term-source-tag">Figure 3</span> Image source: <a href="https://www.istockphoto.com/photos/ransomware-money" target="_blank" rel="noopener noreferrer">BeeBright / iStock (2026)</a></div>
 
           <p data-typewriter>Cloud infrastructure and the end users who depend on it are both increasingly targeted
             by malware and ransomware.</p>
@@ -515,9 +547,17 @@
 
           <p class="term-window__code" data-typewriter>&gt; useful resources &amp; threat intelligence:</p>
           <ul class="resource-links" data-reveal>
-            <li><a href="https://www.cisa.gov/stopransomware" target="_blank" rel="noopener noreferrer">CISA: #StopRansomware Government Resource Hub</a></li>
-            <li><a href="https://www.ncsc.govt.nz/" target="_blank" rel="noopener noreferrer">NZ NCSC &amp; CERT NZ: Incident Response Guidelines</a></li>
+            <li><a href="https://www.cisa.gov/stopransomware" target="_blank" rel="noopener noreferrer">CISA:
+                #StopRansomware Government Resource Hub</a></li>
+            <li><a href="https://www.ncsc.govt.nz/" target="_blank" rel="noopener noreferrer">NZ NCSC &amp; CERT NZ:
+                Incident Response Guidelines</a></li>
           </ul>
+
+          <div class="term-window__meta">
+            <span class="term-meta-tag">[visual asset]</span> Figure 3: Cloud Extortion &amp; Malware &mdash; Source: <a
+              href="https://www.istockphoto.com/photos/ransomware-money" target="_blank"
+              rel="noopener noreferrer">BeeBright / iStock (2026)</a>
+          </div>
         </div>
       </article>
 
@@ -536,9 +576,9 @@
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
         <img class="hero__img" data-hero-img src="assets/web/about.webp"
           alt="Visual representation of integrated cloud security architectures and multi-faceted defensive posture."
-          data-caption="Integrated Cloud Security Overview"
-          data-source="EdwardLuki (2025)"
+          data-caption="Integrated Cloud Security Overview" data-source="EdwardLuki (2025)"
           data-source-url="https://edwardluki.blogspot.com/2025/04/assignment-1.html" />
+        <span class="hero__badge" data-hero-badge><span class="hero__badge-num">FIG 4</span> <span class="hero__badge-src">EdwardLuki (2025)</span></span>
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -560,8 +600,6 @@
         </header>
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Summary</h2>
-
-          <div class="term-window__source"><span class="term-source-tag">Figure 4</span> Image source: <a href="https://edwardluki.blogspot.com/2025/04/assignment-1.html" target="_blank" rel="noopener noreferrer">EdwardLuki (2025)</a></div>
 
           <p data-typewriter>All three problems trace back to the same source. Cloud computing works by sharing
             resources, and sharing means giving up part of the control an organisation used to have on its own
@@ -588,6 +626,12 @@
             <a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube</a>.
           </p>
 
+          <div class="term-window__meta">
+            <span class="term-meta-tag">[visual asset]</span> Figure 4: Integrated Cloud Security Posture &mdash; Source: <a
+              href="https://edwardluki.blogspot.com/2025/04/assignment-1.html" target="_blank"
+              rel="noopener noreferrer">EdwardLuki (2025)</a>
+          </div>
+
           <div class="ref-section" data-reveal>
             <h2 class="term-window__heading">References</h2>
 
@@ -599,23 +643,26 @@
 
             <p class="ref-entry">Alghofaili, Y., Albattah, A., Alrajeh, N., Rassam, M. A., &amp; Al-rimy, B. A. S.
               (2021). Secure cloud infrastructure: A survey on issues, current solutions, and open challenges.
-              <em>Applied Sciences</em>, <em>11</em>(19), Article 9005. <a href="https://doi.org/10.3390/app11199005" target="_blank"
-                rel="noopener noreferrer">https://doi.org/10.3390/app11199005</a>
+              <em>Applied Sciences</em>, <em>11</em>(19), Article 9005. <a href="https://doi.org/10.3390/app11199005"
+                target="_blank" rel="noopener noreferrer">https://doi.org/10.3390/app11199005</a>
             </p>
 
-            <p class="ref-entry">Axiad. (2025, August 7). <em>9 features of a great identity and access management system</em>. Axiad.Ai. <a
+            <p class="ref-entry">Axiad. (2025, August 7). <em>9 features of a great identity and access management
+                system</em>. Axiad.Ai. <a
                 href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank"
-                rel="noopener noreferrer">https://www.axiad.ai/blog/features-of-identity-and-access-management-system</a></p>
+                rel="noopener noreferrer">https://www.axiad.ai/blog/features-of-identity-and-access-management-system</a>
+            </p>
 
-            <p class="ref-entry">BeeBright. (2026). <em>Ransomware money stock photos, pictures &amp; royalty-free images</em>. iStock. <a
-                href="https://www.istockphoto.com/photos/ransomware-money" target="_blank"
+            <p class="ref-entry">BeeBright. (2026). <em>Ransomware money stock photos, pictures &amp; royalty-free
+                images</em>. iStock. <a href="https://www.istockphoto.com/photos/ransomware-money" target="_blank"
                 rel="noopener noreferrer">https://www.istockphoto.com/photos/ransomware-money</a></p>
 
-            <p class="ref-entry">Canva. (2025). <em>Canva</em> [Online design tool]. <a href="https://www.canva.com"
+            <p class="ref-entry">Canva. (2026). <em>Canva</em> [Online design tool]. <a href="https://www.canva.com"
                 target="_blank" rel="noopener noreferrer">https://www.canva.com</a></p>
 
             <p class="ref-entry">Dawood, M., Tu, S., Xiao, C., Alasmary, H., Waqas, M., &amp; Rehman, S. U. (2023).
-              Cyberattacks and security of cloud computing: A complete guideline. <em>Symmetry</em>, <em>15</em>(11), Article 1981.
+              Cyberattacks and security of cloud computing: A complete guideline. <em>Symmetry</em>, <em>15</em>(11),
+              Article 1981.
               <a href="https://doi.org/10.3390/sym15111981" target="_blank"
                 rel="noopener noreferrer">https://doi.org/10.3390/sym15111981</a>
             </p>
@@ -624,14 +671,17 @@
                 href="https://edwardluki.blogspot.com/2025/04/assignment-1.html" target="_blank"
                 rel="noopener noreferrer">https://edwardluki.blogspot.com/2025/04/assignment-1.html</a></p>
 
-            <p class="ref-entry">FeedbackItalia. (2023, May 10). <em>T-Mobile under attack: Disclosed second data breach since the start of 2023</em>. Feedbackitalia.Com. <a
-                href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank"
-                rel="noopener noreferrer">https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/</a></p>
+            <p class="ref-entry">FeedbackItalia. (2023, May 10). <em>T-Mobile under attack: Disclosed second data breach
+                since the start of 2023</em>. Feedbackitalia.Com. <a
+                href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/"
+                target="_blank"
+                rel="noopener noreferrer">https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/</a>
+            </p>
 
             <p class="ref-entry">Hashizume, K., Rosado, D. G., Fern&aacute;ndez-Medina, E., &amp; Fernandez, E. B.
               (2013). An analysis of security issues for cloud computing. <em>Journal of Internet Services and
-                Applications</em>, <em>4</em>, Article 5. <a href="https://doi.org/10.1186/1869-0238-4-5" target="_blank"
-                rel="noopener noreferrer">https://doi.org/10.1186/1869-0238-4-5</a>
+                Applications</em>, <em>4</em>, Article 5. <a href="https://doi.org/10.1186/1869-0238-4-5"
+                target="_blank" rel="noopener noreferrer">https://doi.org/10.1186/1869-0238-4-5</a>
             </p>
 
             <p class="ref-entry">Jansen, W., &amp; Grance, T. (2011). <em>Guidelines on security and privacy in
@@ -653,7 +703,8 @@
 
             <p class="ref-entry">Kurt, E. (2022, April 17). <em>Cloud computing and data security</em>. Medium. <a
                 href="https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09" target="_blank"
-                rel="noopener noreferrer">https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09</a></p>
+                rel="noopener noreferrer">https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09</a>
+            </p>
 
             <p class="ref-entry">Penjala, J. (2019). <em>Information security management in cloud computing: A case
                 study</em> [Master's thesis, University of Oulu]. University of Oulu Repository.</p>

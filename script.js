@@ -1016,6 +1016,7 @@ window.D7Motion = (function () {
       el:      heroEl,
       frame:   heroEl.querySelector('[data-hero-frame]'),
       img:     heroEl.querySelector('[data-hero-img]'),
+      badge:   heroEl.querySelector('[data-hero-badge]'),
       bar:     heroEl.querySelector('.hero__bar'),
       prompt:  heroEl.querySelector('[data-hero-prompt]'),
       spacer:  section.querySelector('[data-hero-spacer]'),
@@ -1066,6 +1067,8 @@ window.D7Motion = (function () {
     if (hero.bar) { hero.bar.style.opacity = e.toFixed(3); }
     /* Prompt clears early - it's stale advice the moment scrolling starts. */
     if (hero.prompt) { hero.prompt.style.opacity = (1 - clamp01(p * 2.6)).toFixed(3); }
+    /* Hero badge fades early so the pinned thumbnail remains clean. */
+    if (hero.badge) { hero.badge.style.opacity = (1 - clamp01(p * 2.8)).toFixed(3); }
 
     /* Content trails the image: it only starts fading up once the image is
        meaningfully out of the way, and finishes before the image is fully
@@ -1162,9 +1165,9 @@ window.D7Motion = (function () {
         metaHtml += '<div class="hero-lightbox__title">' + caption + '</div>';
       }
       if (source && sourceUrl) {
-        metaHtml += '<div class="hero-lightbox__source">Image Source: <a href="' + sourceUrl + '" target="_blank" rel="noopener noreferrer">' + source + '</a></div>';
+        metaHtml += '<div class="hero-lightbox__source"><span class="hero-lightbox__badge">SOURCE</span> <a href="' + sourceUrl + '" target="_blank" rel="noopener noreferrer">' + source + '</a> &mdash; <span class="hero-lightbox__hint">press [esc] or click backdrop to close</span></div>';
       } else if (source) {
-        metaHtml += '<div class="hero-lightbox__source">Image Source: ' + source + '</div>';
+        metaHtml += '<div class="hero-lightbox__source"><span class="hero-lightbox__badge">SOURCE</span> ' + source + '</div>';
       }
       lightboxMeta.innerHTML = metaHtml;
       lightboxMeta.style.display = metaHtml ? 'block' : 'none';

@@ -18,7 +18,7 @@ The site follows the Home → Aspect 1/2/3 → Summary structure from the assign
 4. **Malware** (`malware`) - my third essay paragraph as bullet points, about malware and ransomware.
 5. **Summary** (`about`) - ties the three topics back together, plus my full reference list at the bottom.
 
-The rubric specifies that the three aspect pages should not contain in-text essay citations (focusing on readable bullet points and empirical data), while all image assets are attributed directly to their original sources and full APA 7 bibliographic entries are catalogued in the References list on the Summary page.
+As required by the assignment rubric, the three aspect pages don't have in-text citations in the paragraphs so the points stay clean and easy to read. Instead, each image links straight to its original source, and the full APA 7 reference list is at the bottom of the Summary page.
 
 ---
 
@@ -26,7 +26,7 @@ The rubric specifies that the three aspect pages should not contain in-text essa
 
 - You "navigate" the site by typing commands into a terminal-style input box, kind of like a command line. There's also a `help` command if you forget what to type.
 - Text on each page types itself out letter by letter, like it's being typed live. You can click anywhere on the text to skip straight to the end if you don't want to wait.
-- Each page has a big image at the top that shrinks and moves up as you scroll down, then the text underneath fades/types in. Clicking the image opens it full-size in a pop-up so you can actually read the infographic properly.
+- Each page has a big image at the top that shrinks and moves up into the corner as you scroll down, then the text underneath fades and types in. You can also click any image to pop it open in full size with its title and source link, which makes the infographics much easier to read.
 - There's a "glitch" animation on the images when a page opens - it's meant to look like a screen glitching, to fit the terminal theme.
 - Typing has a small clicking sound effect (like a keyboard), and there's a switch to turn that on or off, plus a switch to turn off the animations if someone doesn't want all the moving stuff. Both switches are on a "before we start" screen that shows up first, and there's also a `settings` command if you want to change them again later.
 - If your browser/OS says you prefer reduced motion, most of this still works the same, since the animation switch is a separate thing you control directly (I did this because a lot of these animations are actually part of the assignment marking, e.g. the infographic scroll effect, so I didn't want them to just silently turn off for some visitors without asking).
@@ -77,14 +77,15 @@ Some extra things: pressing `Esc` also takes you back, `Tab` autocompletes whate
 ```
 d7-cloud-security-site/
 ├── assets/
-│   ├── web/              # the images used on each page
-│   ├── favicon.svg       # little tab icon
-│   └── logo.jpg          # logo used in the corner
-├── index.html            # all the page content/structure
-├── styles.css            # all the colours, fonts, layout, animations
-├── script.js             # everything that makes the site actually work (commands, typing effect, etc.)
+│   ├── web/                # the images used on each page (WebP + infographic)
+│   ├── favicon.svg         # little tab icon
+│   ├── logo.jpg            # logo used in the corner
+│   └── social-preview.jpg  # social preview card for links
+├── index.html              # all the page content/structure
+├── styles.css              # all the colours, fonts, layout, animations
+├── script.js               # everything that makes the site actually work (commands, typing effect, etc.)
 ├── .gitignore
-├── LICENSE                # see below
+├── LICENSE                 # see below
 └── README.md
 ```
 

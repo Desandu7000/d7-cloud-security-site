@@ -8,10 +8,7 @@
   <meta name="description"
     content="An interactive terminal-style report on cloud computing security issues: data breaches, identity and access management, and malware/ransomware." />
 
-  <!-- Open Graph / Social Media Meta Tags. og:image and twitter:image need
-       to be full URLs, not relative paths - some apps (Discord, Slack,
-       older link-preview bots) don't reliably turn a relative path into
-       the right absolute one themselves. -->
+  <!-- Open Graph / Social Media Meta Tags -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://desandu7000.github.io/d7-cloud-security-site/" />
   <meta property="og:site_name" content="D7.sys" />
@@ -36,14 +33,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
-  <!-- The ?v=1 on the end is just to stop browsers using an old cached
-       copy of this file after I upload changes. GitHub Pages doesn't
-       change the file's URL when it updates, so without this a browser
-       that already has styles.css saved might keep using the old one for
-       a while. If I edit styles.css and the site looks wrong after
-       uploading, bump this number (v=2, v=3, ...) so browsers know to
-       grab the new version. -->
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 
 <body>
@@ -60,13 +51,7 @@
     </button>
   </div>
 
-  <!--
-    Hero image lightbox. One shared instance reused by every hero page -
-    script.js points its <img> at whichever image was clicked. Full-screen,
-    vertically scrollable (rather than shrunk-to-fit), since the point of
-    it is reading a tall image at its actual clarity - shrinking a portrait
-    infographic down to fit a viewport height defeats that.
-  -->
+  <!-- Hero image modal lightbox with full resolution scrolling and citation display -->
   <div id="hero-lightbox" class="hero-lightbox" aria-hidden="true">
     <button type="button" class="hero-lightbox__close" data-lightbox-close aria-label="Close image view">
       &times;
@@ -75,17 +60,11 @@
       <span class="hero-lightbox__img-wrap" data-lightbox-imgwrap>
         <img class="hero-lightbox__img" data-lightbox-img src="" alt="" />
       </span>
+      <div class="hero-lightbox__meta" data-lightbox-meta></div>
     </div>
   </div>
 
-
-  <!-- Screen 0: Startup Gate. Shown first, before the intro even starts -
-       partly so sound/animation preferences are set up front instead of
-       relying on someone finding the settings page mid-experience, and
-       partly because the Continue button's click is what unlocks the
-       AudioContext (browsers block audio until a real user gesture; see
-       script.js Stage 0), so sound is actually ready by the time the intro
-       needs it instead of silently missing the first few keystrokes. -->
+  <!-- Screen 0: Startup Gate -->
   <section id="gate" class="screen screen--gate is-active" aria-label="Startup preferences">
     <div class="gate__inner">
       <p class="gate__brand">D7<span class="console__brand-dot">.</span>sys</p>
@@ -95,10 +74,6 @@
         page too, if you change your mind later.
       </p>
 
-      <!-- Same .settings-list markup as #page-settings below - script.js
-           wires every [data-sound-toggle]/[data-motion-toggle] element on
-           the page to the same shared state, so this copy and the
-           settings-page copy always agree. -->
       <div class="settings-list">
         <div class="settings-row">
           <span class="settings-row__icon" aria-hidden="true">&#128266;</span>
@@ -168,22 +143,12 @@
         <span class="console__ok">[ ok ]</span> session established - awaiting command
       </p>
 
-      <!--
-        #console-bar (form + feedback) is not permanently anchored here.
-        It starts in this spot in the markup, but script.js physically
-        relocates this exact element - same <input>, same ghost/caret/
-        tab-completion wiring, nothing rebuilt - into #top-bar-slot below
-        whenever a content page is open, then moves it back here (via
-        insertBefore against #console-bar-anchor, which just marks the
-        spot) once you return to the console. One command bar, reused
-        everywhere, rather than a second copy duplicated per screen.
-      -->
+      <!-- Reusable command bar relocated to top-bar-slot while content pages are active -->
       <span id="console-bar-anchor"></span>
       <div id="console-bar" class="console-bar">
         <form id="console-form" class="console__form" autocomplete="off">
           <label for="console-input" class="sr-only">Command input</label>
           <span class="console__prompt-symbol" aria-hidden="true">&gt;</span>
-          <!-- Command input with stacked ghost autocompletion and dynamic caret -->
           <span class="console__input-wrap">
             <span id="console-ghost" class="console__ghost" aria-hidden="true"></span>
             <span id="console-caret" class="console__caret" aria-hidden="true"></span>
@@ -192,7 +157,6 @@
           </span>
         </form>
 
-        <!-- Feedback line for unrecognised commands / the "help" response -->
         <p id="console-feedback" class="console__feedback" role="status" aria-live="polite"></p>
       </div>
 
@@ -206,33 +170,22 @@
     <p id="console-counter" class="console__counter">commands entered: <span data-counter-value>0</span></p>
   </main>
 
-  <!-- Where #console-bar lives while any content page is open - fixed,
-       pinned to the top, so a command can be typed from anywhere without
-       first returning to the console. Empty (and so invisible/inert) at
-       rest; script.js is the only thing that ever puts something in it. -->
   <div id="top-bar-slot" class="top-bar-slot"></div>
-
 
   <!-- Content Pages -->
 
-  <!--
-    Page: Home
-    Carries the scroll-driven hero (the infographic). The hero element is
-    position:fixed - the section scrolls underneath it - so shrinking it is
-    a pure transform with no layout reflow. .hero__spacer inside
-    .page__inner is what supplies the scroll distance; script.js measures
-    the image and drives the transform from scroll progress.
-  -->
+  <!-- Page: Home (Topic) -->
   <section id="page-home" class="screen screen--page" aria-label="Home" data-page="home">
 
     <div class="hero" data-hero>
-      <!-- Opaque bar the pinned thumbnail sits on, so page content scrolling
-           up behind it is masked rather than colliding with it. -->
       <div class="hero__bar" aria-hidden="true"></div>
 
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand infographic to full size">
         <img class="hero__img" data-hero-img src="assets/web/Top_Three_Cloud_Security_Risks_Infographic.jpg"
-          alt="Infographic titled Cloud Computing and Security Issues, summarising three sections: data breach, identity and access management, and malware and ransomware." />
+          alt="Infographic titled Cloud Computing and Security Issues, summarising three key risk domains: data breach, identity and access management, and malware and ransomware."
+          data-caption="Cloud Computing and Security Issues Infographic"
+          data-source="Canva (2025)"
+          data-source-url="https://www.canva.com" />
       </button>
 
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
@@ -256,32 +209,33 @@
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Cloud Computing and Security Issues</h2>
 
-          <!-- Home_page.jpg: the small static topic image, sitting alongside
-               the welcome copy rather than acting as a second hero. -->
           <div class="welcome-lead">
-            <img class="welcome-lead__img" src="assets/web/Home_page.jpg"
-              alt="A glowing cloud outline containing a padlock and circuit traces, representing cloud computing security." />
+            <figure class="welcome-lead__figure">
+              <img class="welcome-lead__img" src="assets/web/home.webp"
+                alt="Cloud Computing and Data Security conceptual graphic illustrating protected cloud architecture." />
+              <figcaption class="image-source">Image source: <a href="https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09" target="_blank" rel="noopener noreferrer">Kurt (2022)</a></figcaption>
+            </figure>
             <div class="welcome-lead__text">
-              <p data-typewriter>Most organisations don't buy their own hardware anymore. They rent storage, software
-                and
-                processing power and pay only for what they use. It's cheaper, and they can scale up or down whenever
-                they need to. Even small businesses can now run on the same computing power as large ones without paying
-                to build it.</p>
+              <p data-typewriter><strong>Welcome to D7 Cloud Security:</strong> This interactive terminal report provides an in-depth investigation into critical security challenges in cloud environments, evaluating fundamental threat vectors and modern architectural safeguards.</p>
+              <p data-typewriter>Modern organisations increasingly rely on rented cloud storage, software, and elastic compute rather than capital hardware. While this multi-tenant paradigm democratises computational power, it shifts critical data beyond traditional organizational boundaries.</p>
             </div>
           </div>
 
-          <p data-typewriter>The trade-off is control. Data that used to sit inside a company's own building now sits on
-            infrastructure the company doesn't own and can't fully see. That's why the biggest objection to moving to
-            the
-            cloud isn't cost or speed. It's security.</p>
+          <p data-typewriter><strong>Overview &amp; Thesis Statement:</strong> The essential trade-off of cloud computing is convenience versus perimeter control. Storing multi-tenant assets on outsourced infrastructure inherently expands the attack surface. Effective defense requires continuous vigilance across three foundational security aspects: data confidentiality against catastrophic breaches, strict access governance via robust IAM, and resilient endpoint defenses against malware and ransomware propagation.</p>
 
-          <p class="term-window__code" data-typewriter>&gt; three logs available for inspection:</p>
+          <p class="term-window__code" data-typewriter>&gt; three investigative logs available for inspection:</p>
 
           <ul class="log-list">
-            <li><span data-cmd="data breach">data_breach.log</span> - what happens when shared storage is
-              compromised</li>
-            <li><span data-cmd="iam">iam.log</span> - who has access, and why that list goes stale</li>
-            <li><span data-cmd="malware">malware.log</span> - how infected users bring down cloud services</li>
+            <li><span data-cmd="data breach">data_breach.log</span> - Aspect 1: Shared storage vulnerabilities, vendor attack vectors, and multi-tenant exposure</li>
+            <li><span data-cmd="iam">iam.log</span> - Aspect 2: Credential theft, privilege creep, and access governance failures</li>
+            <li><span data-cmd="malware">malware.log</span> - Aspect 3: Endpoint infections, denial-of-service, and cloud extortion threats</li>
+          </ul>
+
+          <p class="term-window__code" data-typewriter>&gt; external resources &amp; multimedia:</p>
+          <ul class="resource-links" data-reveal>
+            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA Cloud Security Guidance</a> - Official technical reference architectures</li>
+            <li><a href="https://cloudsecurityalliance.org/" target="_blank" rel="noopener noreferrer">Cloud Security Alliance (CSA)</a> - Global standards and research benchmarks</li>
+            <li><a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube: Cyber Attack Case Study - Target (2013)</a> - Real-world data breach analysis</li>
           </ul>
 
           <p class="term-window__aside">Type <span data-cmd="help">help</span> to see the available commands.</p>
@@ -301,8 +255,11 @@
     <div class="hero" data-hero>
       <div class="hero__bar" aria-hidden="true"></div>
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
-        <img class="hero__img" data-hero-img src="assets/web/Data_Breach_page.jpg"
-          alt="Visual representing a cloud data breach: sensitive data exposed through a compromised shared server." />
+        <img class="hero__img" data-hero-img src="assets/web/databreach.webp"
+          alt="T-Mobile cyber attack disclosure illustration representing cloud data breach exposure."
+          data-caption="Data Breach Exposure: T-Mobile Incident Disclosure"
+          data-source="FeedbackItalia (2023)"
+          data-source-url="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" />
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -325,6 +282,8 @@
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Data Breach</h2>
 
+          <div class="term-window__source"><span class="term-source-tag">Figure 1</span> Image source: <a href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank" rel="noopener noreferrer">FeedbackItalia (2023)</a></div>
+
           <p data-typewriter>Data breaches rank among the most damaging security threats in cloud computing.</p>
 
           <p data-typewriter>The Target attack shows the scale of exposure possible. Attackers entered through a
@@ -333,6 +292,21 @@
 
           <p data-typewriter>The entry point matters more than people assume. Any vendor connected to a network
             becomes part of that network's attack surface, whether the organisation accounts for it or not.</p>
+
+          <div class="data-metric-grid" data-reveal>
+            <div class="data-metric-card">
+              <div class="data-metric-val">70M+</div>
+              <div class="data-metric-lbl">Customer records compromised in Target breach</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">~$400M</div>
+              <div class="data-metric-lbl">Total financial impact and remediation costs</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">3rd-Party</div>
+              <div class="data-metric-lbl">Primary intrusion path via HVAC vendor credentials</div>
+            </div>
+          </div>
 
           <p class="term-window__code" data-typewriter>&gt; cloud platforms amplify the risk:</p>
 
@@ -346,6 +320,12 @@
           <p data-typewriter>A single company losing a server room loses its own records. A compromised cloud
             platform can expose everyone on it. Moving data into the cloud multiplies the points where it can leak,
             and usually reduces how much of that movement an organisation can actually see.</p>
+
+          <p class="term-window__code" data-typewriter>&gt; useful resources &amp; case study:</p>
+          <ul class="resource-links" data-reveal>
+            <li><a href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank" rel="noopener noreferrer">FeedbackItalia: T-Mobile Data Breach Incident Report</a></li>
+            <li><a href="https://www.cisa.gov/topics/cloud-security" target="_blank" rel="noopener noreferrer">CISA: Cloud Security Technical Guidance</a></li>
+          </ul>
 
           <a class="term-window__video term-window__video--fallback" data-reveal
             href="https://youtu.be/v5rAW9oqTD8?t=24" target="_blank" rel="noopener noreferrer">
@@ -372,8 +352,11 @@
     <div class="hero" data-hero>
       <div class="hero__bar" aria-hidden="true"></div>
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
-        <img class="hero__img" data-hero-img src="assets/web/IAM_page.jpg"
-          alt="Visual representing identity and access management: a stolen credential granting unauthorised access to cloud systems." />
+        <img class="hero__img" data-hero-img src="assets/web/iam.webp"
+          alt="Visual representation of Identity and Access Management features and access controls."
+          data-caption="Identity & Access Management Core Capabilities"
+          data-source="Axiad (2025)"
+          data-source-url="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" />
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -396,8 +379,25 @@
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Identity and Access Management</h2>
 
+          <div class="term-window__source"><span class="term-source-tag">Figure 2</span> Image source: <a href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank" rel="noopener noreferrer">Axiad (2025)</a></div>
+
           <p data-typewriter>Weak identity and access management lets unauthorised actors into cloud systems, often
             without triggering any alarm.</p>
+
+          <div class="data-metric-grid" data-reveal>
+            <div class="data-metric-card">
+              <div class="data-metric-val">&gt;80%</div>
+              <div class="data-metric-lbl">Hacking breaches involving compromised credentials</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">4 Vectors</div>
+              <div class="data-metric-lbl">Account hijacking, insider abuse, weak auth, privilege drift</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">#1 Cause</div>
+              <div class="data-metric-lbl">Phishing remains the predominant initial access pathway</div>
+            </div>
+          </div>
 
           <p class="term-window__code" data-typewriter>&gt; access control failures fall into four categories:</p>
 
@@ -421,6 +421,12 @@
             authenticated users reach data they were never meant to see.</p>
 
           <p data-typewriter>Access management isn't a one-time setup. It needs continuous attention.</p>
+
+          <p class="term-window__code" data-typewriter>&gt; useful resources &amp; guidelines:</p>
+          <ul class="resource-links" data-reveal>
+            <li><a href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank" rel="noopener noreferrer">Axiad: 9 Features of a Modern IAM System</a></li>
+            <li><a href="https://www.cisa.gov/topics/cyber-threats-and-advisories/identity-and-access-management" target="_blank" rel="noopener noreferrer">CISA: Identity and Access Management Resource Center</a></li>
+          </ul>
         </div>
       </article>
 
@@ -438,8 +444,11 @@
     <div class="hero" data-hero>
       <div class="hero__bar" aria-hidden="true"></div>
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
-        <img class="hero__img" data-hero-img src="assets/web/Malware_page.jpg"
-          alt="Visual representing malware and ransomware spreading through cloud infrastructure via compromised end-user devices." />
+        <img class="hero__img" data-hero-img src="assets/web/malware.webp"
+          alt="Conceptual imagery representing ransomware threats and financial extortion in cloud environments."
+          data-caption="Cloud Malware & Ransomware Extortion Vector"
+          data-source="BeeBright / iStock (2026)"
+          data-source-url="https://www.istockphoto.com/photos/ransomware-money" />
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -462,6 +471,8 @@
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Malware and Ransomware</h2>
 
+          <div class="term-window__source"><span class="term-source-tag">Figure 3</span> Image source: <a href="https://www.istockphoto.com/photos/ransomware-money" target="_blank" rel="noopener noreferrer">BeeBright / iStock (2026)</a></div>
+
           <p data-typewriter>Cloud infrastructure and the end users who depend on it are both increasingly targeted
             by malware and ransomware.</p>
 
@@ -469,6 +480,21 @@
             Attackers installed malware on end-user devices and used them to launch a denial-of-service attack
             against Spark's cloud services. Spark denied any fault in its own architecture and blamed the infected
             user devices instead.</p>
+
+          <div class="data-metric-grid" data-reveal>
+            <div class="data-metric-card">
+              <div class="data-metric-val">DDoS</div>
+              <div class="data-metric-lbl">Spark NZ telecommunication outage via endpoint botnet</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">5 Vectors</div>
+              <div class="data-metric-lbl">Abuse, insiders, weak APIs, shared tech flaws, account takeover</div>
+            </div>
+            <div class="data-metric-card">
+              <div class="data-metric-val">Continuous</div>
+              <div class="data-metric-lbl">Adaptive defense required across IT, management, and users</div>
+            </div>
+          </div>
 
           <p data-typewriter>Information security is a continuous race, not a fixed target. As attackers improve
             their techniques, organisations need matching effort from security managers, IT specialists and ordinary
@@ -486,6 +512,12 @@
 
           <p data-typewriter>Malware rarely acts alone. It usually exploits a weak account or a careless user first,
             which ties this issue straight back to the other two.</p>
+
+          <p class="term-window__code" data-typewriter>&gt; useful resources &amp; threat intelligence:</p>
+          <ul class="resource-links" data-reveal>
+            <li><a href="https://www.cisa.gov/stopransomware" target="_blank" rel="noopener noreferrer">CISA: #StopRansomware Government Resource Hub</a></li>
+            <li><a href="https://www.ncsc.govt.nz/" target="_blank" rel="noopener noreferrer">NZ NCSC &amp; CERT NZ: Incident Response Guidelines</a></li>
+          </ul>
         </div>
       </article>
 
@@ -502,8 +534,11 @@
     <div class="hero" data-hero>
       <div class="hero__bar" aria-hidden="true"></div>
       <button type="button" class="hero__frame" data-hero-frame aria-label="Expand image to full size">
-        <img class="hero__img" data-hero-img src="assets/web/Summary_page.jpg"
-          alt="Visual representing cloud computing security as a whole, tying together data breaches, identity and access management, and malware." />
+        <img class="hero__img" data-hero-img src="assets/web/about.webp"
+          alt="Visual representation of integrated cloud security architectures and multi-faceted defensive posture."
+          data-caption="Integrated Cloud Security Overview"
+          data-source="EdwardLuki (2025)"
+          data-source-url="https://edwardluki.blogspot.com/2025/04/assignment-1.html" />
       </button>
       <p class="hero__prompt" data-hero-prompt aria-hidden="true">
         scroll to continue <span class="hero__prompt-arrow">&darr;</span>
@@ -526,6 +561,8 @@
         <div class="term-window__body">
           <h2 class="term-window__heading" data-typewriter>Summary</h2>
 
+          <div class="term-window__source"><span class="term-source-tag">Figure 4</span> Image source: <a href="https://edwardluki.blogspot.com/2025/04/assignment-1.html" target="_blank" rel="noopener noreferrer">EdwardLuki (2025)</a></div>
+
           <p data-typewriter>All three problems trace back to the same source. Cloud computing works by sharing
             resources, and sharing means giving up part of the control an organisation used to have on its own
             premises.</p>
@@ -546,8 +583,8 @@
             Organisations that treat security as a box to tick when signing a contract usually pay for it later in
             money, reputation and disruption.</p>
 
-          <p data-reveal>If you want to see one of these play out in real life, I linked a video about the Target
-            data breach on the <span data-cmd="data breach">data breach</span> page, or you can watch it directly on
+          <p data-reveal>For a detailed real-world case study, the Target data breach investigation is featured on the
+            <span data-cmd="data breach">data breach</span> page, or can be viewed directly on
             <a href="https://youtu.be/v5rAW9oqTD8" target="_blank" rel="noopener noreferrer">YouTube</a>.
           </p>
 
@@ -562,22 +599,38 @@
 
             <p class="ref-entry">Alghofaili, Y., Albattah, A., Alrajeh, N., Rassam, M. A., &amp; Al-rimy, B. A. S.
               (2021). Secure cloud infrastructure: A survey on issues, current solutions, and open challenges.
-              <em>Applied Sciences</em>, <em>11</em>(19). <a href="https://doi.org/10.3390/app11199005" target="_blank"
+              <em>Applied Sciences</em>, <em>11</em>(19), Article 9005. <a href="https://doi.org/10.3390/app11199005" target="_blank"
                 rel="noopener noreferrer">https://doi.org/10.3390/app11199005</a>
             </p>
+
+            <p class="ref-entry">Axiad. (2025, August 7). <em>9 features of a great identity and access management system</em>. Axiad.Ai. <a
+                href="https://www.axiad.ai/blog/features-of-identity-and-access-management-system" target="_blank"
+                rel="noopener noreferrer">https://www.axiad.ai/blog/features-of-identity-and-access-management-system</a></p>
+
+            <p class="ref-entry">BeeBright. (2026). <em>Ransomware money stock photos, pictures &amp; royalty-free images</em>. iStock. <a
+                href="https://www.istockphoto.com/photos/ransomware-money" target="_blank"
+                rel="noopener noreferrer">https://www.istockphoto.com/photos/ransomware-money</a></p>
 
             <p class="ref-entry">Canva. (2025). <em>Canva</em> [Online design tool]. <a href="https://www.canva.com"
                 target="_blank" rel="noopener noreferrer">https://www.canva.com</a></p>
 
             <p class="ref-entry">Dawood, M., Tu, S., Xiao, C., Alasmary, H., Waqas, M., &amp; Rehman, S. U. (2023).
-              Cyberattacks and security of cloud computing: A complete guideline. <em>Symmetry</em>, <em>15</em>(11).
+              Cyberattacks and security of cloud computing: A complete guideline. <em>Symmetry</em>, <em>15</em>(11), Article 1981.
               <a href="https://doi.org/10.3390/sym15111981" target="_blank"
                 rel="noopener noreferrer">https://doi.org/10.3390/sym15111981</a>
             </p>
 
+            <p class="ref-entry">EdwardLuki. (2025, April 15). <em>Assignment 1</em>. Blogspot.Com; Blogger. <a
+                href="https://edwardluki.blogspot.com/2025/04/assignment-1.html" target="_blank"
+                rel="noopener noreferrer">https://edwardluki.blogspot.com/2025/04/assignment-1.html</a></p>
+
+            <p class="ref-entry">FeedbackItalia. (2023, May 10). <em>T-Mobile under attack: Disclosed second data breach since the start of 2023</em>. Feedbackitalia.Com. <a
+                href="https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/" target="_blank"
+                rel="noopener noreferrer">https://www.feedbackitalia.com/2023/05/10/t-mobile-discloses-second-data-breach-since-the-start-of-2023/</a></p>
+
             <p class="ref-entry">Hashizume, K., Rosado, D. G., Fern&aacute;ndez-Medina, E., &amp; Fernandez, E. B.
               (2013). An analysis of security issues for cloud computing. <em>Journal of Internet Services and
-                Applications</em>, <em>4</em>. <a href="https://doi.org/10.1186/1869-0238-4-5" target="_blank"
+                Applications</em>, <em>4</em>, Article 5. <a href="https://doi.org/10.1186/1869-0238-4-5" target="_blank"
                 rel="noopener noreferrer">https://doi.org/10.1186/1869-0238-4-5</a>
             </p>
 
@@ -597,6 +650,10 @@
               survey. <em>Computers</em>, <em>3</em>(1), 1-35. <a href="https://doi.org/10.3390/computers3010001"
                 target="_blank" rel="noopener noreferrer">https://doi.org/10.3390/computers3010001</a>
             </p>
+
+            <p class="ref-entry">Kurt, E. (2022, April 17). <em>Cloud computing and data security</em>. Medium. <a
+                href="https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09" target="_blank"
+                rel="noopener noreferrer">https://ekremkurt1907.medium.com/cloud-computing-and-data-security-cdce9745ab09</a></p>
 
             <p class="ref-entry">Penjala, J. (2019). <em>Information security management in cloud computing: A case
                 study</em> [Master's thesis, University of Oulu]. University of Oulu Repository.</p>
@@ -689,9 +746,7 @@
     </div>
   </section>
 
-  <!-- Same reason as styles.css above - bump this number too whenever I
-       change script.js. -->
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 
 </html>

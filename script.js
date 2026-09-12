@@ -2,27 +2,13 @@
    D7 - Cloud Computing and Security Issues
    script.js
 
-   This whole file is basically split into "stages" - each one is a chunk of
-   code wrapped in its own function that runs itself straight away, so the
-   variables inside don't leak into the other stages and mess things up.
+   Modular architecture: each subsystem is encapsulated in an IIFE scope
+   to prevent variable leakage across components.
 
-   STAGE 0: TYPING SOUND
-
-   Makes a little "click" sound when the title/console text is typing in.
-   window.D7Sound.play() is how the rest of the file triggers it. The
-   bullet-point text on the actual content pages does NOT play this sound
-   (I turned it off there on purpose) because typing a whole paragraph with
-   a click on every letter just sounded like noise, not like typing.
-
-   I didn't use a sound file for this - it's generated in the browser using
-   the Web Audio API (basically just a short burst of static filtered down
-   to sound like a key click). Saves having to upload an audio file.
-
-   It starts off muted unless you already switched it on last time you
-   visited (saved using localStorage - see the note further down about why
-   I used that instead of a cookie). Browsers also won't let a website play
-   any sound at all until you've clicked something on the page first, so
-   turning the switch on is also what "unlocks" the audio for the browser.
+   STAGE 0: AUDIO FEEDBACK
+   Synthesizes subtle mechanical key-click feedback for terminal typing
+   interactions using Web Audio API filtered noise bursts. State is persisted
+   via localStorage. AudioContext initializes on explicit user interaction.
    ========================================================================== */
 
 (function () {
@@ -130,22 +116,9 @@
 
 
 /* ============================================================================
-   STAGE 0b: REDUCE ANIMATIONS SWITCH
-
-   This is a switch I made myself for turning animations off, separate from
-   the "reduce motion" setting some people have turned on in their own
-   computer/phone settings. Every other part of this file that needs to
-   check "should I animate this or not?" just checks window.D7Motion.reduced
-   instead of checking the browser setting directly, so there's only one
-   place this logic lives.
-
-   I made it default to animations ON even if someone's device settings say
-   "reduce motion", because a few of the animations here (like the image
-   glitch effect and the scroll effect) are actually part of what I'm being
-   marked on for this assignment, not just decoration. So instead of
-   guessing what people want, I just give them an actual switch to turn it
-   off if they want to. Saved with localStorage (see Stage 0's comment above
-   for why not a cookie) so it remembers your choice next time.
+   STAGE 0b: ANIMATION PREFERENCE MANAGER
+   Allows users to toggle visual motion (hero glitch, scroll interpolation,
+   and canvas background effects). Exposed as window.D7Motion.
    ========================================================================== */
 
 window.D7Motion = (function () {
@@ -194,19 +167,10 @@ window.D7Motion = (function () {
 
 
 /* ============================================================================
-   STAGE 0c: STARTUP SCREEN (THE "BEFORE WE START" SCREEN)
-
-   This handles the Continue button on the very first screen you see. The
-   intro animation (Stage 1 below) doesn't run by itself anymore - it waits
-   for this code to tell it to start (through window.D7StartIntro), which
-   only happens once you click Continue.
-
-   I put the sound/animation switches on this screen instead of just
-   letting people find the settings page later, because clicking Continue
-   is a proper "user click" that the browser will accept for unlocking
-   audio. If I waited for someone to discover the settings page on their
-   own, the first bit of typing sound would have already tried (and failed)
-   to play before that.
+   STAGE 0c: STARTUP GATE
+   Presents initial audio and animation preferences prior to executing the
+   terminal boot animation. The continue button click unlocks AudioContext
+   guaranteeing user gesture compliance.
    ========================================================================== */
 
 (function () {
@@ -1174,6 +1138,7 @@ window.D7Motion = (function () {
   var lightboxWrap   = lightbox && lightbox.querySelector('[data-lightbox-imgwrap]');
   var lightboxScroll = lightbox && lightbox.querySelector('[data-lightbox-scroll]');
   var lightboxClose  = lightbox && lightbox.querySelector('[data-lightbox-close]');
+  var lightboxMeta   = lightbox && lightbox.querySelector('[data-lightbox-meta]');
   var lightboxOpener = null;   /* the hero.frame that opened it, for focus return on close */
 
   function isLightboxOpen() {
@@ -1187,6 +1152,24 @@ window.D7Motion = (function () {
     var src = hero.img.currentSrc || hero.img.src;
     lightboxImg.src = src;
     lightboxImg.alt = hero.img.alt;
+
+    if (lightboxMeta) {
+      var caption = hero.img.getAttribute('data-caption') || '';
+      var source = hero.img.getAttribute('data-source') || '';
+      var sourceUrl = hero.img.getAttribute('data-source-url') || '';
+      var metaHtml = '';
+      if (caption) {
+        metaHtml += '<div class="hero-lightbox__title">' + caption + '</div>';
+      }
+      if (source && sourceUrl) {
+        metaHtml += '<div class="hero-lightbox__source">Image Source: <a href="' + sourceUrl + '" target="_blank" rel="noopener noreferrer">' + source + '</a></div>';
+      } else if (source) {
+        metaHtml += '<div class="hero-lightbox__source">Image Source: ' + source + '</div>';
+      }
+      lightboxMeta.innerHTML = metaHtml;
+      lightboxMeta.style.display = metaHtml ? 'block' : 'none';
+    }
+
     if (lightboxScroll) { lightboxScroll.scrollTop = 0; }
     lightbox.classList.add('is-open');
     lightbox.setAttribute('aria-hidden', 'false');
@@ -1208,6 +1191,7 @@ window.D7Motion = (function () {
       lightbox.classList.remove('is-open');
       lightbox.setAttribute('aria-hidden', 'true');
       if (lightboxWrap) { lightboxWrap.classList.remove('is-glitching-out'); }
+      if (lightboxMeta) { lightboxMeta.innerHTML = ''; }
       /* Return focus to whatever opened it, for keyboard/screen-reader users
          - otherwise focus is left on a now-hidden close button. */
       if (lightboxOpener) { lightboxOpener.focus({ preventScroll: true }); }

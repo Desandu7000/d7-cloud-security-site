@@ -20,14 +20,11 @@
 
 
 /* ---------------------------------------------------------------------------
-   01. DESIGN TOKENS (basically just variables for colours etc.)
-   I put every colour, spacing value and animation timing here as a CSS
-   variable (the --something-like-this values) instead of typing the actual
-   value everywhere, so if I want to change a colour I only have to change
-   it in one place instead of hunting through the whole file.
-   Colour scheme: dark navy background, cyan as the main accent colour,
-   amber/orange as a second accent. I didn't want to just do plain green
-   text on black since that's the obvious "hacker terminal" cliché.
+   01. DESIGN TOKENS
+   CSS custom properties for global color palette, spacing scale, font stacks,
+   and transition parameters.
+   Primary palette: deep navy background, neon cyan primary accent,
+   amber secondary accent, and high-contrast readable text layers.
 --------------------------------------------------------------------------- */
 :root {
   /* Backgrounds - layered from darkest (page) to lightest (raised panel) */
@@ -1383,8 +1380,8 @@ button { font: inherit; color: inherit; }
 
 .hero__img {
   display: block;
-  max-width: min(880px, 88vw);
-  max-height: 74vh;
+  max-width: min(920px, 90vw);
+  max-height: 80vh;
   border-radius: 8px;
   border: 1px solid var(--line-accent);
   box-shadow:
@@ -1392,12 +1389,9 @@ button { font: inherit; color: inherit; }
     0 0 42px rgba(70, 230, 208, 0.10);
 }
 
-/* Glitch effect that plays when a hero image first loads (triggered from
-   script.js). ::before/::after are colour-shifted copies of the same
-   image that flash outward and snap back, like a screen glitching. I
-   animate .hero__img here, not .hero__frame, because .hero__frame's
-   position is already controlled by the scroll-shrink effect in
-   script.js and I don't want the two fighting each other. */
+/* Chromatic aberration glitch effect on hero image entrance. Pseudo-elements
+   render red and cyan color-shifted duplicates. We animate .hero__img directly
+   to avoid collision with the scroll-driven transform on .hero__frame. */
 .hero__frame::before,
 .hero__frame::after {
   content: '';
@@ -1493,10 +1487,10 @@ button { font: inherit; color: inherit; }
    collapses to a single column when there isn't room. */
 .welcome-lead {
   display: grid;
-  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
-  gap: var(--gap-md);
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: var(--gap-lg);
   align-items: start;
-  margin-bottom: var(--gap-md);
+  margin: var(--gap-md) 0 var(--gap-lg);
 }
 @media (max-width: 900px) {
   .welcome-lead { grid-template-columns: 1fr; }
@@ -1504,12 +1498,136 @@ button { font: inherit; color: inherit; }
 
 .welcome-lead__img {
   width: 100%;
-  border-radius: 6px;
+  height: auto;
+  aspect-ratio: 720 / 480;
+  object-fit: cover;
+  border-radius: 8px;
   border: 1px solid var(--line-accent);
-  box-shadow: 0 0 26px rgba(70, 230, 208, 0.12);
+  box-shadow: 0 8px 32px rgba(70, 230, 208, 0.16);
 }
 
 .welcome-lead__text p:last-child { margin-bottom: 0; }
+
+/* Image figure container & source attributions */
+.welcome-lead__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.image-source,
+.term-window__source {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.image-source a,
+.term-window__source a,
+.hero-lightbox__source a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
+}
+
+.image-source a:hover,
+.term-window__source a:hover,
+.hero-lightbox__source a:hover {
+  color: var(--amber);
+}
+
+.term-window__source {
+  margin: 0.5rem 0 1.25rem 0;
+  padding: 0.45rem 0.85rem;
+  background: rgba(70, 230, 208, 0.05);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.term-source-tag {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+/* Lightbox caption & source */
+.hero-lightbox__meta {
+  margin-top: 1rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  max-width: min(760px, 92vw);
+}
+
+.hero-lightbox__source {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+/* Data highlights / charts in Aspect pages */
+.data-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.85rem;
+  margin: 1.25rem 0;
+}
+
+.data-metric-card {
+  padding: 0.85rem 1rem;
+  background: rgba(8, 12, 22, 0.75);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  border-left: 3px solid var(--amber);
+}
+
+.data-metric-val {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  color: var(--amber);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  line-height: 1.1;
+}
+
+.data-metric-lbl {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Resource links list */
+.resource-links {
+  margin: 0.8rem 0 1.2rem;
+  padding-left: 1.2rem;
+}
+
+.resource-links li {
+  margin-bottom: 0.45rem;
+  color: var(--text-body);
+  font-size: 0.9rem;
+}
+
+.resource-links a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
+}
+
+.resource-links a:hover {
+  color: var(--amber);
+}
 
 /* A line rendered as terminal output rather than prose. */
 .term-window__code {
@@ -1828,14 +1946,10 @@ button { font: inherit; color: inherit; }
 
 
 /* ---------------------------------------------------------------------------
-   09. RESPONSIVE
-   Used to just show a "please use a bigger screen" message below 768px
-   instead of actually being responsive. I changed my mind on that and made
-   it work properly on phones instead, since most people would probably
-   open a link like this on their phone first. The clamp() font sizes I
-   already had everywhere did most of the work for free - these breakpoints
-   just fix up the specific bits that needed rearranging for a narrow screen
-   (the console, the gate, the hero image, that sort of thing).
+   09. RESPONSIVE LAYOUT
+   Fluid typography (via clamp) combined with media queries optimizes the
+   terminal interface across viewport sizes from mobile handsets to ultra-wide
+   displays.
 --------------------------------------------------------------------------- */
 
 /* Tablet and below */

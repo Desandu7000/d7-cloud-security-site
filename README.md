@@ -18,7 +18,7 @@ The site follows the Home → Aspect 1/2/3 → Summary structure from the assign
 4. **Malware** (`malware`) - my third essay paragraph as bullet points, about malware and ransomware.
 5. **Summary** (`about`) - ties the three topics back together, plus my full reference list at the bottom.
 
-The rubric said the three aspect pages shouldn't have in-text references (just bullet points), so all my citations only show up in the reference list on the Summary page.
+The rubric specifies that the three aspect pages should not contain in-text essay citations (focusing on readable bullet points and empirical data), while all image assets are attributed directly to their original sources and full APA 7 bibliographic entries are catalogued in the References list on the Summary page.
 
 ---
 
